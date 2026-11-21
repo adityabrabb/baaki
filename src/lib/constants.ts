@@ -238,6 +238,58 @@ export const QUICK_ADD_SUBMIT_LABEL = 'Add';
 export const QUICK_ADD_DISABLED_REASON =
    'Saving lines arrives in a later slice.';
 
+// Students slice (PRD §4 step 1, §5 /students): ids, form limits and copy
+export const STUDENT_ID_PREFIX = 'stu';
+export const FAMILY_ID_PREFIX = 'fam';
+export const INVOICE_ID_PREFIX = 'inv';
+export const ID_SEPARATOR = '-';
+export const FIRST_NEW_ID_NUMBER = 1;
+export const ID_STEP = 1;
+export const NEW_FAMILY_PHONE = '';
+export const NAME_MAX_LENGTH = 60;
+export const RAISE_MONTH_FORMAT = 'MMMM yyyy';
+export const ROW_SEPARATOR = ' · ';
+export const INPUT_CLASS = `min-h-11 w-full border-2 border-ink bg-chalk px-3 font-body text-base text-ink ${FOCUS_RING_CLASS}`;
+export const DEFAULT_BATCH = BATCH_NAMES[0];
+export const BLANK_STUDENT_DRAFT = {
+   name: '',
+   familyName: '',
+   batch: DEFAULT_BATCH,
+   classLevel: CLASS_MIN,
+   feeAmount: FEE_MIN,
+} as const;
+export const STUDENT_ERRORS = {
+   nameRequired: 'Enter the student name.',
+   nameTooLong: `Keep the name under ${NAME_MAX_LENGTH} characters.`,
+   familyRequired: 'Enter the family name.',
+   familyTooLong: `Keep the family name under ${NAME_MAX_LENGTH} characters.`,
+   batchInvalid: 'Pick a batch from the list.',
+   classRange: `Class must be a whole number from ${CLASS_MIN} to ${CLASS_MAX}.`,
+   feeRange: `Fee must be a whole number of rupees from ${FEE_MIN} to ${FEE_MAX}.`,
+} as const;
+export const STUDENTS_COPY = {
+   addButton: 'Add student',
+   editButton: 'Edit',
+   formAddTitle: 'Add a student',
+   formEditTitle: 'Edit student',
+   saveButton: 'Save student',
+   cancelButton: 'Cancel',
+   nameLabel: 'Student name',
+   familyLabel: 'Family name',
+   batchLabel: 'Batch',
+   classLabel: 'Class',
+   feeLabel: 'Monthly fee (₹)',
+   raisePrefix: 'Raise',
+   raiseSuffix: 'fees',
+   raiseDone: 'Fee invoices raised:',
+   raiseNone:
+      "Nothing new to raise: each active student already has this month's invoice.",
+   savedNote: 'Student saved.',
+   saveError:
+      "Couldn't save to this browser. Changes may be lost on refresh.",
+   saveMissing: 'That student is no longer in the roster.',
+} as const;
+
 // Placeholder page copy (PRD §5); empty states until each feature slice lands
 export const CASH_STATUS_PLACEHOLDER =
    'Cash status appears here once the forecast is connected.';
@@ -275,6 +327,88 @@ export const PAGE_COPY = {
       title: 'Settings',
       empty: 'Business name, UPI id and demo controls go here.',
    },
+} as const;
+
+// Invoice slice (PRD §5 /invoice/[id]): payment limits, timeline labels and copy
+export const PAYMENT_ID_PREFIX = 'pay';
+export const MIN_PAYMENT_AMOUNT = 1;
+export const PAYMENT_METHOD_LABELS = { upi: 'UPI', cash: 'Cash' } as const;
+export const REMINDER_TONE_LABELS = {
+   gentle: 'Gentle',
+   firm: 'Firm',
+   final: 'Final',
+} as const;
+export const REMINDER_CHANNEL_LABELS = {
+   whatsapp: 'WhatsApp',
+   copy: 'Copied',
+} as const;
+export const TIMELINE_KINDS = ['raised', 'reminder', 'payment', 'paid'] as const;
+export const TIMELINE_KIND_LABELS = {
+   raised: 'Raised',
+   reminder: 'Reminder sent',
+   payment: 'Payment received',
+   paid: 'Paid in full',
+} as const;
+export const OWED_HREF = '/owed';
+export const OWED_FAMILY_QUERY = 'family';
+export const PAYMENT_ERRORS = {
+   amountRequired: 'Enter the amount in whole rupees.',
+   amountMin: `Amount must be at least ${MIN_PAYMENT_AMOUNT} rupee.`,
+   amountTooHigh: 'Amount cannot be more than the balance still due.',
+   methodRequired: 'Pick UPI or cash.',
+   dateInvalid: 'Pick a date from today or earlier.',
+   alreadyPaid: 'This invoice is already paid in full.',
+   invoiceMissing: 'That invoice is no longer in the khata.',
+} as const;
+export const INVOICE_COPY = {
+   notFound: 'No invoice matches that id. It may have been removed.',
+   studentLabel: 'Student',
+   familyLabel: 'Family',
+   monthLabel: 'Month',
+   dueLabel: 'Due',
+   stillDue: 'Still due',
+   paidNote: 'Fully paid. Nothing more to collect.',
+   fullHint: 'Enter the full balance to mark this invoice paid.',
+   timelineTitle: 'Timeline',
+   timelineEmpty: 'No activity yet.',
+   paymentTitle: 'Record a payment',
+   amountLabel: 'Amount received (₹)',
+   methodLabel: 'Paid by',
+   dateLabel: 'Date paid',
+   submitButton: 'Record payment',
+   savedNote: 'Payment recorded.',
+   saveError: STUDENTS_COPY.saveError,
+} as const;
+
+// Owed board slice (PRD §4 steps 2-3, §5 /owed): ageing, sheet copy, reminder template
+export const AGEING_BUCKETS = [
+   { id: 'days_0_7', label: '0-7 days', maxDays: 7 },
+   { id: 'days_8_30', label: '8-30 days', maxDays: 30 },
+   { id: 'days_30_plus', label: '30+ days', maxDays: Number.POSITIVE_INFINITY },
+] as const;
+export const OWED_REMINDER_CHANNEL = 'copy' as const;
+export const REMINDER_ID_PREFIX = 'rem';
+export const REMINDER_TOKEN_PATTERN = /\{(\w+)\}/g;
+export const REMINDER_TEMPLATE =
+   'Hello {family}, the fee of {amount} is {days} days past due. Please pay when you can. Thank you, {business}.';
+export const OWED_FAMILY_ROW_PREFIX = 'owed-family';
+export const OWED_SHEET_TITLE_ID = 'chase-sheet-title';
+export const OWED_HIGHLIGHT_CLASS =
+   'ring-4 ring-marigold ring-offset-2 ring-offset-paper';
+export const OWED_ESCAPE_KEY = 'Escape';
+export const OWED_COPY = {
+   totalLabel: 'Total owed',
+   bucketsTitle: 'Days overdue',
+   bucketCountLabel: 'open',
+   rowsTitle: 'Families who owe',
+   noOverdue: 'Nothing is overdue yet. Every open fee is still within its due date.',
+   chaseSheetTitle: 'Chase reminder',
+   sheetNote:
+      'This is a template. Nothing is sent for you: copy it into WhatsApp yourself.',
+   copyButton: 'Copy reminder',
+   closeButton: 'Close',
+   copied: 'Copied. Paste it into WhatsApp to send.',
+   copyError: "Couldn't copy here. Select the text and copy it by hand.",
 } as const;
 
 

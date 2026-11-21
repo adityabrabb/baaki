@@ -1,5 +1,7 @@
-// Purpose: /invoice/[id] route (PRD §5): one invoice, placeholder until the invoice slice lands.
-import { PlaceholderPage } from '../../../components/khata/PlaceholderPage';
+// Purpose: /invoice/[id] route (PRD §5): one invoice with its timeline, payment form and chase link.
+import { InvoiceView } from '../../../components/invoice/InvoiceView';
+import { PageHeading } from '../../../components/khata/PageHeading';
+import { StoreGate } from '../../../components/khata/StoreGate';
 import { PAGE_COPY } from '../../../lib/constants';
 
 export default async function InvoicePage({
@@ -9,10 +11,11 @@ export default async function InvoicePage({
 }) {
    const { id } = await params;
    return (
-      <PlaceholderPage
-         title={`${PAGE_COPY.invoice.title} ${id}`}
-         empty={PAGE_COPY.invoice.empty}
-      />
+      <>
+         <PageHeading title={PAGE_COPY.invoice.title} />
+         <StoreGate>
+            <InvoiceView invoiceId={id} />
+         </StoreGate>
+      </>
    );
 }
-

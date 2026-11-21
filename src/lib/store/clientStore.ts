@@ -1,6 +1,7 @@
 // Purpose: external store for the khata; loads localStorage (or the seed) on the client only, for useSyncExternalStore.
 import { STORE_STATUS } from '../constants';
 import { kolkataDateOf } from '../dates';
+import type { StoreState } from '../types';
 import { createLocalStorageRepository } from './repository';
 import { LOADING_STORE_VALUE, type StoreContextValue } from './StoreContext';
 
@@ -40,6 +41,13 @@ export function subscribe(listener: Listener): () => void {
    return () => {
       listeners.delete(listener);
    };
+}
+
+/** Why: the single write path; the UI always sees the new state even if storage is full or missing. */
+export function commitState(next: StoreState): boolean {
+   const saved = repository.save(next);
+   emit({ status: STORE_STATUS.ready, state: next, today: snapshot.today });
+   return saved;
 }
 
 /** Why: returns the same object until the store changes, as useSyncExternalStore requires. */
