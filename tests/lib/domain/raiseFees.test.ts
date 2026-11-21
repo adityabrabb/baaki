@@ -51,22 +51,22 @@ describe('raiseMonthlyFees', () => {
       expect(result.raised).toBe(2);
       expect(result.state.invoices).toEqual([
          {
-            id: 'inv-2025-03-stu-01',
+            id: 'inv-2025-04-stu-01',
             studentId: 'stu-01',
             familyId: 'fam-stu-01',
-            month: '2025-03',
+            month: '2025-04',
             amount: 1800,
             raisedOn: '2025-03-01',
-            dueDate: '2025-03-05',
+            dueDate: '2025-04-05',
          },
          {
-            id: 'inv-2025-03-stu-02',
+            id: 'inv-2025-04-stu-02',
             studentId: 'stu-02',
             familyId: 'fam-stu-02',
-            month: '2025-03',
+            month: '2025-04',
             amount: 2400,
             raisedOn: '2025-03-01',
-            dueDate: '2025-03-05',
+            dueDate: '2025-04-05',
          },
       ]);
    });
@@ -81,15 +81,15 @@ describe('raiseMonthlyFees', () => {
       expect(second.state).toEqual(first.state);
    });
 
-   it('skips only students already invoiced this month', () => {
+   it('skips only students already invoiced for the target month', () => {
       const existing: Invoice = {
-         id: 'inv-2025-03-stu-01',
+         id: 'inv-2025-04-stu-01',
          studentId: 'stu-01',
          familyId: 'fam-stu-01',
-         month: '2025-03',
+         month: '2025-04',
          amount: 2000,
          raisedOn: '2025-03-01',
-         dueDate: '2025-03-05',
+         dueDate: '2025-04-05',
       };
       const state = makeState(
          [student('stu-01'), student('stu-02')],
@@ -103,7 +103,7 @@ describe('raiseMonthlyFees', () => {
       ]);
    });
 
-   it('ignores last month invoices when raising this month', () => {
+   it('ignores last month invoices when raising next month', () => {
       const lastMonth: Invoice = {
          id: 'inv-2025-02-stu-01',
          studentId: 'stu-01',
@@ -134,14 +134,14 @@ describe('raiseMonthlyFees', () => {
 
    it('handles a leap-day raise in February', () => {
       const result = raiseMonthlyFees(makeState([student('stu-01')]), '2024-02-29');
-      expect(result.state.invoices[0]?.month).toBe('2024-02');
-      expect(result.state.invoices[0]?.dueDate).toBe('2024-02-05');
+      expect(result.state.invoices[0]?.month).toBe('2024-03');
+      expect(result.state.invoices[0]?.dueDate).toBe('2024-03-05');
       expect(result.state.invoices[0]?.raisedOn).toBe('2024-02-01');
    });
 });
 
 describe('raiseMonthLabel', () => {
    it('names the month being raised', () => {
-      expect(raiseMonthLabel(TODAY)).toBe('March 2025');
+      expect(raiseMonthLabel(TODAY)).toBe('April 2025');
    });
 });

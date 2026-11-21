@@ -8,6 +8,8 @@ const VARIANT_CLASSES: Record<StampVariant, string> = {
    overdue: 'border-margin-red text-margin-red',
    part_paid: 'border-ink bg-marigold text-ink',
    raised: 'border-ink text-ink',
+   covered: 'border-leaf text-leaf',
+   not_covered: 'border-margin-red text-margin-red',
 };
 
 /** Why: a static stamp with no animation, so reduced-motion users see the same label. */

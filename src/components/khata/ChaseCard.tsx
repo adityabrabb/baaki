@@ -26,9 +26,9 @@ export function ChaseCard({
    onChase,
 }: ChaseCardProps) {
    return (
-      <article className="border-2 border-ink bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]">
+      <article className="min-w-0 border-2 border-ink bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]">
          <div className="flex items-start justify-between gap-3">
-            <h3 className="font-hand text-2xl font-bold text-ink">
+            <h3 className="min-w-0 font-hand text-2xl font-bold break-words text-ink">
                {familyName}
             </h3>
             <span className="border border-ink px-2 py-0.5 text-xs font-semibold text-ink">

@@ -4,9 +4,16 @@ import {
    FEE_DUE_DAY,
    ID_SEPARATOR,
    INVOICE_ID_PREFIX,
+   NEXT_MONTH_OFFSET,
    RAISE_MONTH_FORMAT,
 } from '../constants';
-import { dateInMonth, monthKeyOf, monthStart, parseDateOnly } from '../dates';
+import {
+   addMonths,
+   dateInMonth,
+   monthKeyOf,
+   monthStart,
+   parseDateOnly,
+} from '../dates';
 import type { Invoice, StoreState } from '../types';
 
 export interface RaiseResult {
@@ -19,12 +26,17 @@ function invoiceIdFor(month: string, studentId: string): string {
    return `${INVOICE_ID_PREFIX}${ID_SEPARATOR}${month}${ID_SEPARATOR}${studentId}`;
 }
 
+/** Why: fees are raised in advance, so the button offers the month after today. */
+export function raiseTargetMonth(today: string): string {
+   return monthKeyOf(addMonths(monthStart(today), NEXT_MONTH_OFFSET));
+}
+
 /**
  * Why: pure and idempotent. Pressing "Raise fees" twice leaves the second press
- * with nothing to add, because each active student is checked for this month first.
+ * with nothing to add, because each active student is checked for the target month first.
  */
 export function raiseMonthlyFees(state: StoreState, today: string): RaiseResult {
-   const month = monthKeyOf(today);
+   const month = raiseTargetMonth(today);
    const invoiced = new Set(
       state.invoices
          .filter((invoice) => invoice.month === month)
@@ -50,7 +62,8 @@ export function raiseMonthlyFees(state: StoreState, today: string): RaiseResult 
    };
 }
 
-/** Why: the button label names the month being raised, e.g. "March 2025". */
+/** Why: the button label names the month being raised, e.g. "April 2025". */
 export function raiseMonthLabel(today: string): string {
-   return format(parseDateOnly(today), RAISE_MONTH_FORMAT);
+   const target = addMonths(monthStart(today), NEXT_MONTH_OFFSET);
+   return format(parseDateOnly(target), RAISE_MONTH_FORMAT);
 }

@@ -24,10 +24,10 @@ export function FamilyRow({ item, highlighted, onChase }: FamilyRowProps) {
    return (
       <article
          id={`${OWED_FAMILY_ROW_PREFIX}-${item.familyId}`}
-         className={`border-2 border-ink bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]${highlight}`}
+         className={`min-w-0 border-2 border-ink bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]${highlight}`}
       >
          <div className="flex flex-wrap items-start justify-between gap-3">
-            <h3 className="font-hand text-2xl font-bold text-ink">
+            <h3 className="min-w-0 font-hand text-2xl font-bold break-words text-ink">
                {item.familyName}
             </h3>
             <Stamp variant="overdue" />

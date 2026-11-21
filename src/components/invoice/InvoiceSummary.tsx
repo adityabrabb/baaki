@@ -32,16 +32,21 @@ export function InvoiceSummary({
       <section className="flex flex-col gap-4">
          <div className="flex flex-wrap items-center gap-3">
             <Stamp variant={status} />
+            {status === 'overdue' && balance < invoice.amount && (
+               <span className="font-body text-sm font-semibold text-ink">
+                  {`${formatINR(invoice.amount - balance)} of ${formatINR(invoice.amount)} ${INVOICE_COPY.receivedSuffix}`}
+               </span>
+            )}
             <span className="font-body text-sm text-ink-soft">
                {INVOICE_COPY.monthLabel}: {invoice.month}
             </span>
          </div>
          <div className="flex flex-col gap-1">
-            <p className="font-hand text-2xl text-ink">{studentName}</p>
-            <p className="font-body text-base text-ink-soft">
+            <p className="font-hand text-2xl break-words text-ink">{studentName}</p>
+            <p className="font-body text-base break-words text-ink-soft">
                {INVOICE_COPY.familyLabel}: {familyName}
             </p>
-            <p className="font-body text-base text-ink-soft">
+            <p className="font-body text-base break-words text-ink-soft">
                {INVOICE_COPY.dueLabel}: {invoice.dueDate}
             </p>
          </div>

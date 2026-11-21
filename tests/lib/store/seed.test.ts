@@ -12,7 +12,7 @@ import { isAfterDate } from '../../../src/lib/dates';
 import { buildSeedState } from '../../../src/lib/store/seed';
 import { TODAY } from '../../fixtures/state';
 
-const LAST_MONTH = '2025-02';
+const CURRENT_MONTH = TODAY.slice(0, 7);
 
 describe('buildSeedState', () => {
    it('gives deep-equal output for the same today', () => {
@@ -35,10 +35,10 @@ describe('buildSeedState', () => {
       expect(months.size).toBeGreaterThanOrEqual(HISTORY_MONTHS);
    });
 
-   it('has the configured overdue set from last month still owing', () => {
+   it('has the configured overdue set from this month still owing', () => {
       const state = buildSeedState(TODAY);
       const owing = state.invoices.filter((inv) => {
-         if (inv.month !== LAST_MONTH) return false;
+         if (inv.month !== CURRENT_MONTH) return false;
          const paid = state.payments
             .filter((p) => p.invoiceId === inv.id)
             .reduce((sum, p) => sum + p.amount, 0);

@@ -47,6 +47,8 @@ export const FEE_DUE_DAY = 5;
 export const SEED_CHILD_NAMES = [
    'Aarav', 'Diya', 'Kabir', 'Meera', 'Ishaan', 'Saanvi', 'Vihaan', 'Anika',
    'Reyansh', 'Tara', 'Dev', 'Ira', 'Yash', 'Nisha', 'Arjun', 'Kiara',
+   'Advait', 'Riya', 'Shaurya', 'Pooja', 'Rohan', 'Sneha', 'Kunal', 'Asha',
+   'Tanvi', 'Ritvik', 'Gauri', 'Om', 'Siddhi', 'Nikhil', 'Esha', 'Parth',
 ] as const;
 export const SEED_SURNAMES = [
    'Kulkarni', 'Deshpande', 'Joshi', 'Patil', 'Pawar', 'Gokhale', 'Mehta',
@@ -60,7 +62,8 @@ export const RNG_SEED = 1729;
 export const HISTORY_MONTHS = 6;
 export const RELIABLE_FAMILY_COUNT = 17;
 export const USUALLY_LATE_FAMILY_COUNT = 8;
-export const OVERDUE_INVOICE_COUNT = 9;
+export const OVERDUE_INVOICE_COUNT = 8;
+export const SEED_LAST_MONTH_OWING_COUNT = 2;
 export const OVERDUE_MIN = 8;
 export const OVERDUE_MAX = 10;
 export const PARTIAL_PAYMENT_DIVISOR = 2;
@@ -219,12 +222,21 @@ export const NAV_MORE_ITEMS = [
 ] as const;
 
 // Khata components: stamps, chase card, quick-add, big numbers
-export const STAMP_VARIANTS = ['paid', 'overdue', 'part_paid', 'raised'] as const;
+export const STAMP_VARIANTS = [
+   'paid',
+   'overdue',
+   'part_paid',
+   'raised',
+   'covered',
+   'not_covered',
+] as const;
 export const STAMP_LABELS = {
    paid: 'PAID',
    overdue: 'OVERDUE',
    part_paid: 'PART-PAID',
    raised: 'RAISED',
+   covered: 'COVERED',
+   not_covered: 'NOT COVERED',
 } as const;
 export const FOCUS_RING_CLASS =
    'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
@@ -283,21 +295,35 @@ export const STUDENTS_COPY = {
    raiseSuffix: 'fees',
    raiseDone: 'Fee invoices raised:',
    raiseNone:
-      "Nothing new to raise: each active student already has this month's invoice.",
+      "Nothing new to raise: each active student already has next month's invoice.",
    savedNote: 'Student saved.',
    saveError:
       "Couldn't save to this browser. Changes may be lost on refresh.",
    saveMissing: 'That student is no longer in the roster.',
 } as const;
 
-// Placeholder page copy (PRD §5); empty states until each feature slice lands
-export const CASH_STATUS_PLACEHOLDER =
-   'Cash status appears here once the forecast is connected.';
+// Today page (PRD §5 /): cash line, next bill, chase queue and alerts
+export const TODAY_CHASE_LIMIT = 5;
+export const TODAY_COPY = {
+   cashLabel: 'Cash in hand',
+   owedThisMonth: 'still owed for this month',
+   billTitle: 'Next bill',
+   billDue: 'Due',
+   billCovered: 'Cash in hand covers this bill.',
+   billNotCovered: 'Cash in hand does not cover this bill yet.',
+   noBill: 'No active bills. Add rent and other outgoings to see the next one.',
+   chaseTitle: 'Chase queue',
+   chaseMore: 'Showing the top families. The Owed board lists everyone.',
+   alertsTitle: 'Alerts',
+   alertsEmpty: `No bill is at risk in the next ${FORECAST_HORIZON_DAYS} days.`,
+   alertAction: 'Open the Owed board',
+} as const;
 
+// Placeholder page copy (PRD §5); empty states until each feature slice lands
 export const PAGE_COPY = {
    today: {
       title: 'Today',
-      empty: 'Nothing to chase yet. Raise this month\'s fees to fill the list.',
+      empty: 'Nothing to chase yet. Raise next month\'s fees to fill the list.',
    },
    owed: {
       title: 'Owed',
@@ -367,6 +393,7 @@ export const INVOICE_COPY = {
    monthLabel: 'Month',
    dueLabel: 'Due',
    stillDue: 'Still due',
+   receivedSuffix: 'received',
    paidNote: 'Fully paid. Nothing more to collect.',
    fullHint: 'Enter the full balance to mark this invoice paid.',
    timelineTitle: 'Timeline',

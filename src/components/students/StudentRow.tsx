@@ -15,8 +15,8 @@ export function StudentRow({ student, familyName, onEdit }: StudentRowProps) {
    return (
       <li className="flex flex-wrap items-center justify-between gap-3 border-b border-paper-line py-3">
          <div className="min-w-0">
-            <p className="font-hand text-xl text-ink">{student.name}</p>
-            <p className="font-body text-sm text-ink-soft">
+            <p className="font-hand text-xl break-words text-ink">{student.name}</p>
+            <p className="font-body text-sm break-words text-ink-soft">
                {`${familyName}${ROW_SEPARATOR}${STUDENTS_COPY.classLabel} ${student.classLevel}`}
             </p>
          </div>

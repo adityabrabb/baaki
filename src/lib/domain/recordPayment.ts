@@ -43,8 +43,9 @@ export function paymentInputSchema(balance: number, today: string) {
 }
 
 /**
- * Why: the status shown as a stamp. Any money received with a balance left is
- * PART-PAID, even when past due; OVERDUE is only for an invoice with nothing paid.
+ * Why: the status shown as a stamp. Fully paid is PAID; past due with money
+ * still owed is OVERDUE (even when part-paid); otherwise PART-PAID if any money
+ * came in, else RAISED.
  */
 export function invoiceStatus(
    invoice: Invoice,

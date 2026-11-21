@@ -1,5 +1,5 @@
 // Purpose: builds seeded invoices, payments, reminders and recurring bills for the demo store.
-// Six months of history plus this month; the previous month holds the overdue chase set.
+// Six months of history plus this month; the latest due month holds the overdue chase set, and the month before it a few Risky fees.
 import type { Bill, Invoice, Payment, Reminder } from '../types';
 import {
    BILL_PRESETS,
@@ -11,6 +11,7 @@ import {
    OVERDUE_INVOICE_COUNT,
    PARTIAL_PAYMENT_DIVISOR,
    PAYMENT_METHODS,
+   SEED_LAST_MONTH_OWING_COUNT,
    SEED_PARTIAL_PAY_DAYS_AFTER_DUE,
    SEED_REMINDER_OFFSETS_DAYS,
    TONES,
@@ -37,6 +38,19 @@ export function chaseStudentIds(roster: SeedRoster): string[] {
    return roster.students
       .filter((s) => roster.riskByFamily[s.familyId] !== 'reliable')
       .slice(0, OVERDUE_INVOICE_COUNT)
+      .map((s) => s.id);
+}
+
+/**
+ * Why: a few Risky students also owe last month's fee, so some overdue
+ * invoices land in the 30+ day bucket as well as the 8-30 day bucket.
+ */
+export function lastMonthOwingIds(roster: SeedRoster, chase: Set<string>): string[] {
+   return roster.students
+      .filter(
+         (s) => roster.riskByFamily[s.familyId] === 'risky' && !chase.has(s.id),
+      )
+      .slice(0, SEED_LAST_MONTH_OWING_COUNT)
       .map((s) => s.id);
 }
 
@@ -90,16 +104,22 @@ export function buildMoney(
 ): SeedMoney {
    const chaseIds = chaseStudentIds(roster);
    const chase = new Set(chaseIds);
+   const owingLastMonth = new Set(lastMonthOwingIds(roster, chase));
    const firstChaseId = chaseIds[0];
    const currentMonth = monthStart(today);
-   const lastMonth = monthKeyOf(addMonths(currentMonth, -1));
+   // Why: a fee is overdue only after its due day, so the chase month is the latest one already due.
+   const dueDayThisMonth = dateInMonth(monthKeyOf(currentMonth), FEE_DUE_DAY);
+   const dueStart = isAfterDate(today, dueDayThisMonth)
+      ? currentMonth
+      : addMonths(currentMonth, -1);
+   const dueMonth = monthKeyOf(dueStart);
+   const priorDueMonth = monthKeyOf(addMonths(dueStart, -1));
    const invoices: Invoice[] = [];
    const payments: Payment[] = [];
 
    for (let offset = -HISTORY_MONTHS; offset <= 0; offset++) {
       const monthDate = addMonths(currentMonth, offset);
       const month = monthKeyOf(monthDate);
-      const isLastMonth = month === lastMonth;
       const isCurrentMonth = month === monthKeyOf(currentMonth);
       for (const student of roster.students) {
          const risk = roster.riskByFamily[student.familyId] ?? 'reliable';
@@ -117,20 +137,25 @@ export function buildMoney(
          };
          invoices.push(invoice);
 
-         if (isLastMonth && chase.has(student.id)) {
-            // Overdue set stays unpaid; the first one part-pays for the partial flow.
-            if (student.id === firstChaseId) {
+         const isOwing =
+            (month === dueMonth && chase.has(student.id)) ||
+            (month === priorDueMonth && owingLastMonth.has(student.id));
+         if (isOwing) {
+            // Overdue set stays unpaid; the first chase family part-pays in the due month.
+            if (month === dueMonth && student.id === firstChaseId) {
                const partial = Math.floor(invoice.amount / PARTIAL_PAYMENT_DIVISOR);
-               const partialDate = addDays(
+               const afterDue = addDays(
                   invoice.dueDate,
                   SEED_PARTIAL_PAY_DAYS_AFTER_DUE,
                );
+               // Why: a partial cannot be dated after today, even mid-month.
+               const partialDate = isAfterDate(afterDue, today) ? today : afterDue;
                payments.push(payment(invoice, partial, method, partialDate));
             }
             continue;
          }
 
-         // Current-month late payers have settled by today, so only the chase set owes.
+         // Other current-month late payers have settled by today.
          const scheduled = addDays(invoice.dueDate, delay);
          const late = isAfterDate(scheduled, today);
          const payDate = isCurrentMonth && late ? today : scheduled;
@@ -141,7 +166,7 @@ export function buildMoney(
    }
 
    const chaseInvoices = invoices.filter(
-      (i) => i.month === lastMonth && chase.has(i.studentId),
+      (i) => i.month === dueMonth && chase.has(i.studentId),
    );
    return {
       invoices,
