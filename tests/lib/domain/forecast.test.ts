@@ -33,13 +33,63 @@ describe('forecast', () => {
          payments: [payment('pp1', 'p1', 'fp', 500, '2025-03-10')],
       });
       const { days } = forecast(state, TODAY);
+      // The 500 already received is cash on hand from day one.
       // Due 20 March is offset 5; the remaining 1000 lands then, not 1500.
-      expect(days[4].optimistic).toBe(OPENING_BALANCE);
-      expect(days[5].optimistic).toBe(OPENING_BALANCE + 1000);
-      expect(days[89].expected).toBe(OPENING_BALANCE + 1000);
+      expect(days[4].optimistic).toBe(OPENING_BALANCE + 500);
+      expect(days[5].optimistic).toBe(OPENING_BALANCE + 1500);
+      expect(days[89].expected).toBe(OPENING_BALANCE + 1500);
       // Pessimistic slips 15 days: 4 April is offset 20.
-      expect(days[19].pessimistic).toBe(OPENING_BALANCE);
-      expect(days[20].pessimistic).toBe(OPENING_BALANCE + 1000);
+      expect(days[19].pessimistic).toBe(OPENING_BALANCE + 500);
+      expect(days[20].pessimistic).toBe(OPENING_BALANCE + 1500);
+   });
+
+   it('raises expected by a recorded payment on an overdue invoice', () => {
+      const overdue = invoice('o1', 'fp', '2025-03-01', 1500);
+      const unpaid = forecast(makeState({ invoices: [overdue] }), TODAY);
+      const paid = forecast(
+         makeState({
+            invoices: [overdue],
+            payments: [payment('po1', 'o1', 'fp', 1500, '2025-03-10')],
+         }),
+         TODAY,
+      );
+      // Overdue fees add nothing until paid, so the payment is pure cash.
+      unpaid.days.forEach((day, i) => {
+         expect(paid.days[i].expected - day.expected).toBe(1500);
+      });
+   });
+
+   it('counts a partial payment on an overdue invoice; the rest adds 0', () => {
+      const overdue = invoice('o1', 'fp', '2025-03-01', 1500);
+      const unpaid = forecast(makeState({ invoices: [overdue] }), TODAY);
+      const partly = forecast(
+         makeState({
+            invoices: [overdue],
+            payments: [payment('po1', 'o1', 'fp', 500, '2025-03-10')],
+         }),
+         TODAY,
+      );
+      unpaid.days.forEach((day, i) => {
+         expect(partly.days[i].expected - day.expected).toBe(500);
+      });
+      expect(partly.days[89].expected).toBe(OPENING_BALANCE + 500);
+   });
+
+   it('keeps optimistic >= expected >= pessimistic on every day (mixed)', () => {
+      const state = makeState({
+         invoices: [
+            invoice('o1', 'fp', '2025-03-01', 1500),
+            invoice('n1', 'fq', '2025-03-25', 1500),
+            invoice('n2', 'fr', '2025-04-05', 2000),
+         ],
+         payments: [payment('po1', 'o1', 'fp', 500, '2025-03-10')],
+         bills: [bill('bill-rent', 'Rent', 12000, 1)],
+      });
+      const { days } = forecast(state, TODAY);
+      for (const day of days) {
+         expect(day.optimistic).toBeGreaterThanOrEqual(day.expected);
+         expect(day.expected).toBeGreaterThanOrEqual(day.pessimistic);
+      }
    });
 
    it('takes bills out on their day of the month within the horizon', () => {

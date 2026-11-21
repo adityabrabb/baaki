@@ -75,7 +75,16 @@ function memoReliability(
    };
 }
 
-/** Why: each open invoice lands on its due, expected and slipped dates. */
+/** Why: cash on hand is the opening balance plus every payment already received. */
+function cashOnHand(state: StoreState): number {
+   const received = state.payments.reduce(
+      (sum, payment) => sum + payment.amount,
+      0,
+   );
+   return state.business.openingBalance + received;
+}
+
+/** Why: open invoices land on their due or expected dates; overdue ones only count optimistically. */
 function addInflows(
    flows: Flows,
    state: StoreState,
@@ -90,6 +99,7 @@ function addInflows(
       const at = (date: string): number =>
          diffDays(notBefore(date, today), today);
       addAt(flows.optimistic, at(invoice.dueDate), owed);
+      if (isAfterDate(today, invoice.dueDate)) continue;
       addAt(flows.expected, at(expectedPayDate(invoice.dueDate, avg)), owed);
       if (history.badge !== 'risky') {
          const slipped = expectedPayDate(
@@ -137,10 +147,11 @@ export function forecast(state: StoreState, today: string): ForecastResult {
    addInflows(flows, state, today);
    const bills = addOutflows(flows, state.bills, dates, today);
 
+   const opening = cashOnHand(state);
    const running: Record<Scenario, number> = {
-      optimistic: state.business.openingBalance,
-      expected: state.business.openingBalance,
-      pessimistic: state.business.openingBalance,
+      optimistic: opening,
+      expected: opening,
+      pessimistic: opening,
    };
    const days: ForecastDay[] = dates.map((date, i) => {
       for (const scenario of Object.keys(running) as Scenario[]) {

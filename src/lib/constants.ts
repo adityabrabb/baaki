@@ -28,6 +28,8 @@ export const DEFAULT_LANGUAGE = 'hinglish';
 export const BUSINESS_NAME = "Priya's Maths Classes";
 export const OPENING_BALANCE = 18000;
 export const DEFAULT_BUFFER = 5000;
+// Seed only: expected cash on the next rent date sits this far under the buffer
+export const BAD_DAY_SHORTFALL = 1000;
 export const UPI_ID = 'priya.tutor@upi';
 export const PHONE_PREFIX = '+91 90000 0';
 export const PHONE_DIGITS = 4;
@@ -80,8 +82,9 @@ export const MULBERRY_MASK_B = 61;
 export const UINT32_RANGE = 4294967296;
 
 // Recurring bills (PRD §1, §5 /bills); dayOfMonth is the due day
+export const RENT_BILL_ID = 'bill-rent';
 export const BILL_PRESETS = [
-   { id: 'bill-rent', name: 'Rent', amount: 12000, dayOfMonth: 1 },
+   { id: RENT_BILL_ID, name: 'Rent', amount: 12000, dayOfMonth: 1 },
    { id: 'bill-helper', name: 'Helper salary', amount: 6000, dayOfMonth: 7 },
    { id: 'bill-phone', name: 'Phone and internet', amount: 800, dayOfMonth: 12 },
    { id: 'bill-printing', name: 'Printing', amount: 1500, dayOfMonth: 20 },
@@ -110,11 +113,11 @@ export const RELIABILITY_LABELS = {
 
 // Forecast assumptions shown in the UI (the forecast is an estimate)
 export const FORECAST_ASSUMPTIONS = [
-   'Opening balance is the cash on hand today; recorded payments are already in it.',
-   'Optimistic: every open invoice is paid on its due date.',
-   'Expected: each family pays on its due date plus its average delay from recent history.',
+   'Cash on hand is the opening balance plus every recorded payment.',
+   'Optimistic: every open invoice is paid on its due date; overdue ones are paid today.',
+   'Expected: each family pays on its due date plus its average delay; overdue fees add nothing until paid.',
    'Pessimistic: expected plus a further late margin; Risky families never pay.',
-   'Overdue invoices are counted from today onward, never in the past.',
+   'Overdue fees are not counted until they are paid.',
    'Bills leave on their day of the month and are always paid in full.',
    'Partial payments reduce what is still expected; fully paid invoices add nothing.',
    'Students who leave and fee changes are not modelled.',

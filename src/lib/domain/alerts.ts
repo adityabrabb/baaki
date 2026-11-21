@@ -47,5 +47,8 @@ export function alerts(state: StoreState, today: string): Alert[] {
          text: `${bill.name} due ${bill.date} ${ALERT_MESSAGES[kind]} ${ALERT_ACTIONS[kind]}`,
       });
    }
-   return out;
+   return out.sort(
+      (a, b) =>
+         a.daysAway - b.daysAway || a.billId.localeCompare(b.billId),
+   );
 }
