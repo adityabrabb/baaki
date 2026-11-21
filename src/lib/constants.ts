@@ -1,0 +1,175 @@
+// Purpose: every magic number and string for Baaki (PRD §6, §8, §9).
+// Nothing else in src/lib may hard-code these values.
+
+// Storage and schema (PRD §9)
+export const STORAGE_KEY = 'baaki:v1';
+export const SCHEMA_VERSION = 1;
+
+// Calendar: Asia/Kolkata convention; all dates are YYYY-MM-DD strings
+export const TIMEZONE = 'Asia/Kolkata';
+export const DATE_FORMAT = 'yyyy-MM-dd';
+export const MONTH_FORMAT = 'yyyy-MM';
+export const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+export const MONTH_KEY_PATTERN = /^\d{4}-\d{2}$/;
+export const FIRST_DAY_OF_MONTH = 1;
+
+// Enumerations (types.ts derives its unions from these tuples)
+export const TONES = ['gentle', 'firm', 'final'] as const;
+export const LANGUAGES = ['english', 'hinglish', 'hindi'] as const;
+export const PAYMENT_METHODS = ['upi', 'cash'] as const;
+export const REMINDER_CHANNELS = ['whatsapp', 'copy'] as const;
+export const RISK_BADGES = ['reliable', 'usually_late', 'risky'] as const;
+
+// Settings defaults
+export const DEFAULT_TONE = 'gentle';
+export const DEFAULT_LANGUAGE = 'hinglish';
+
+// Business seed (PRD §8)
+export const BUSINESS_NAME = "Priya's Maths Classes";
+export const OPENING_BALANCE = 18000;
+export const DEFAULT_BUFFER = 5000;
+export const UPI_ID = 'priya.tutor@upi';
+export const PHONE_PREFIX = '+91 90000 0';
+export const PHONE_DIGITS = 4;
+
+// Roster seed (PRD §1, §8)
+export const STUDENT_COUNT = 32;
+export const FAMILY_COUNT = 28;
+export const BATCH_NAMES = ['Batch A', 'Batch B', 'Batch C', 'Batch D'] as const;
+export const CLASS_MIN = 8;
+export const CLASS_MAX = 10;
+export const FEE_MIN = 1500;
+export const FEE_MAX = 2500;
+export const FEE_STEP = 100;
+export const FEE_DUE_DAY = 5;
+export const SEED_CHILD_NAMES = [
+   'Aarav', 'Diya', 'Kabir', 'Meera', 'Ishaan', 'Saanvi', 'Vihaan', 'Anika',
+   'Reyansh', 'Tara', 'Dev', 'Ira', 'Yash', 'Nisha', 'Arjun', 'Kiara',
+] as const;
+export const SEED_SURNAMES = [
+   'Kulkarni', 'Deshpande', 'Joshi', 'Patil', 'Pawar', 'Gokhale', 'Mehta',
+   'Iyer', 'Naik', 'Bhave', 'Sathe', 'Rane', 'Sawant', 'Kale',
+] as const;
+export const FAMILY_LABEL = 'family';
+export const SIBLING_FAMILY_COUNT = 4;
+
+// Seeded history (PRD §8)
+export const RNG_SEED = 1729;
+export const HISTORY_MONTHS = 6;
+export const RELIABLE_FAMILY_COUNT = 17;
+export const USUALLY_LATE_FAMILY_COUNT = 8;
+export const OVERDUE_INVOICE_COUNT = 9;
+export const OVERDUE_MIN = 8;
+export const OVERDUE_MAX = 10;
+export const PARTIAL_PAYMENT_DIVISOR = 2;
+export const SEED_REMINDER_OFFSETS_DAYS = [-1, -5] as const;
+export const SEED_PARTIAL_PAY_DAYS_AFTER_DUE = 2;
+export const DELAY_RANGE_DAYS = {
+   reliable: [0, 3],
+   usually_late: [4, 15],
+   risky: [12, 25],
+} as const;
+
+// mulberry32 PRNG constants
+export const MULBERRY_INCREMENT = 0x6d2b79f5;
+export const MULBERRY_SHIFT_A = 15;
+export const MULBERRY_SHIFT_B = 7;
+export const MULBERRY_SHIFT_C = 14;
+export const MULBERRY_ODD_MASK = 1;
+export const MULBERRY_MASK_B = 61;
+export const UINT32_RANGE = 4294967296;
+
+// Recurring bills (PRD §1, §5 /bills); dayOfMonth is the due day
+export const BILL_PRESETS = [
+   { id: 'bill-rent', name: 'Rent', amount: 12000, dayOfMonth: 1 },
+   { id: 'bill-helper', name: 'Helper salary', amount: 6000, dayOfMonth: 7 },
+   { id: 'bill-phone', name: 'Phone and internet', amount: 800, dayOfMonth: 12 },
+   { id: 'bill-printing', name: 'Printing', amount: 1500, dayOfMonth: 20 },
+] as const;
+
+// Domain: reliability, forecast, chase (PRD §6)
+export const RELIABILITY_WINDOW_MONTHS = 6;
+export const RELIABLE_MAX_AVG_DELAY = 3;
+export const USUALLY_LATE_MAX_AVG_DELAY = 15;
+export const RISK_WEIGHTS = { reliable: 0, usually_late: 0.5, risky: 1 } as const;
+export const FORECAST_HORIZON_DAYS = 90;
+export const PESSIMISTIC_EXTRA_DELAY_DAYS = 15;
+export const CHASE_RECENT_REMINDER_DAYS = 3;
+export const WHATIF_LATE_DAYS = 15;
+export const WHATIF_TOP_FAMILY_COUNT = 5;
+
+// Reliability labels and thresholds (PRD §6)
+export const ON_TIME_MAX_DELAY_DAYS = 0;
+export const PERCENT_SCALE = 100;
+export const NO_HISTORY_BADGE = 'reliable' as const;
+export const RELIABILITY_LABELS = {
+   reliable: 'Reliable',
+   usually_late: 'Usually late',
+   risky: 'Risky',
+} as const;
+
+// Forecast assumptions shown in the UI (the forecast is an estimate)
+export const FORECAST_ASSUMPTIONS = [
+   'Opening balance is the cash on hand today; recorded payments are already in it.',
+   'Optimistic: every open invoice is paid on its due date.',
+   'Expected: each family pays on its due date plus its average delay from recent history.',
+   'Pessimistic: expected plus a further late margin; Risky families never pay.',
+   'Overdue invoices are counted from today onward, never in the past.',
+   'Bills leave on their day of the month and are always paid in full.',
+   'Partial payments reduce what is still expected; fully paid invoices add nothing.',
+   'Students who leave and fee changes are not modelled.',
+] as const;
+
+// Alerts (PRD §6): kinds, the message stem and the action each alert names
+export const ALERT_KINDS = ['uncovered_bill', 'below_buffer'] as const;
+export const ALERT_MESSAGES = {
+   uncovered_bill: 'is not covered by expected cash.',
+   below_buffer: 'leaves expected cash under the buffer.',
+} as const;
+export const ALERT_ACTIONS = {
+   uncovered_bill: 'Chase overdue families before then, or move the bill.',
+   below_buffer: 'Chase a few more families or move the bill to a later day.',
+} as const;
+
+// What-if scenarios (PRD §6): ids in display order, labels, and defaults
+export const WHATIF_SCENARIOS = [
+   'family_late',
+   'top_families_late',
+   'lose_students',
+   'raise_fees',
+] as const;
+export const WHATIF_LABELS = {
+   family_late: 'One family pays late',
+   top_families_late: 'Top families pay late',
+   lose_students: 'Students leave next month',
+   raise_fees: 'Fees rise next month',
+} as const;
+export const WHATIF_LOST_STUDENT_COUNT = 2;
+export const WHATIF_FEE_RISE_PERCENT = 10;
+export const NEXT_MONTH_OFFSET = 1;
+
+// Money formatting: the only money formatter is formatINR (PRD §6)
+export const INR_SYMBOL = '₹';
+export const NEGATIVE_SIGN = '-';
+export const INR_FIRST_GROUP_SIZE = 3;
+export const INR_LATER_GROUP_SIZE = 2;
+export const INR_GROUP_SEPARATOR = ',';
+
+// Quick-add parser (PRD §6): deterministic regex; AI only if this fails
+export const QUICK_ADD_MAX_LENGTH = 120;
+export const QUICK_ADD_MAX_DIGITS = 7;
+export const QUICK_ADD_DAY_OFFSETS = { today: 0, yesterday: -1 } as const;
+export const QUICK_ADD_BILL_WORDS = ['rent'] as const;
+export const QUICK_ADD_PAYMENT_PATTERN = new RegExp(
+   `^([a-z][a-z .'-]*?)\\s+(?:paid\\s+)?(?:rs\\.?\\s*|₹\\s*)?` +
+      `(\\d{1,${QUICK_ADD_MAX_DIGITS}})` +
+      `(?:\\s+(${PAYMENT_METHODS.join('|')}))?` +
+      `(?:\\s+(${Object.keys(QUICK_ADD_DAY_OFFSETS).join('|')}))?$`,
+   'i',
+);
+export const QUICK_ADD_BILL_PATTERN = new RegExp(
+   `^(${QUICK_ADD_BILL_WORDS.join('|')})\\s+paid` +
+      `(?:\\s+(${Object.keys(QUICK_ADD_DAY_OFFSETS).join('|')}))?$`,
+   'i',
+);
+
