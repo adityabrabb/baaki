@@ -1,0 +1,26 @@
+/* Purpose: Khata design tokens as CSS variables plus the matching Tailwind v4 theme colours and fonts. */
+
+:root {
+   --paper: #FBF3E0;
+   --paper-line: #D9CBB0;
+   --margin-red: #D7263D;
+   --ink: #1B2A6B;
+   --ink-soft: #4A5794;
+   --marigold: #F6A11A;
+   --leaf: #1E7B4B;
+   --chalk: #FFFFFF;
+}
+
+@theme inline {
+   --color-paper: var(--paper);
+   --color-paper-line: var(--paper-line);
+   --color-margin-red: var(--margin-red);
+   --color-ink: var(--ink);
+   --color-ink-soft: var(--ink-soft);
+   --color-marigold: var(--marigold);
+   --color-leaf: var(--leaf);
+   --color-chalk: var(--chalk);
+   --font-display: var(--font-anton);
+   --font-hand: var(--font-kalam);
+   --font-body: var(--font-hind);
+}

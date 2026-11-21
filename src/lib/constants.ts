@@ -176,3 +176,105 @@ export const QUICK_ADD_BILL_PATTERN = new RegExp(
    'i',
 );
 
+// Fonts: CSS variable names set on <html> and read by tokens.css (design system)
+export const FONT_VARIABLES = {
+   display: '--font-anton',
+   hand: '--font-kalam',
+   body: '--font-hind',
+} as const;
+
+// App shell and accessibility
+export const APP_TITLE = 'Baaki';
+export const APP_DESCRIPTION = 'Fee and cash-flow back office for a home tutor.';
+export const MAIN_CONTENT_ID = 'main';
+export const SKIP_LINK_LABEL = 'Skip to main content';
+
+// Store provider status (client only; loading is the first render)
+export const STORE_STATUS = {
+   loading: 'loading',
+   ready: 'ready',
+   error: 'error',
+} as const;
+export const STORE_LOADING_COPY = 'Opening your khata...';
+export const STORE_ERROR_COPY =
+   "Couldn't open your khata. Refresh the page to try again.";
+export const STORE_MISSING_PROVIDER =
+   'useStore must be used inside StoreProvider.';
+
+// Navigation (PRD §5 routes)
+export const NAV_LABEL = 'Main navigation';
+export const HOME_HREF = '/';
+export const NAV_PRIMARY_ITEMS = [
+   { href: '/', label: 'Today' },
+   { href: '/owed', label: 'Owed' },
+   { href: '/forecast', label: 'Forecast' },
+   { href: '/students', label: 'Students' },
+] as const;
+export const NAV_MORE_LABEL = 'More';
+export const NAV_MORE_MENU_ID = 'more-menu';
+export const NAV_MORE_ITEMS = [
+   { href: '/bills', label: 'Bills' },
+   { href: '/pricing', label: 'Pricing' },
+   { href: '/settings', label: 'Settings' },
+] as const;
+
+// Khata components: stamps, chase card, quick-add, big numbers
+export const STAMP_VARIANTS = ['paid', 'overdue', 'part_paid', 'raised'] as const;
+export const STAMP_LABELS = {
+   paid: 'PAID',
+   overdue: 'OVERDUE',
+   part_paid: 'PART-PAID',
+   raised: 'RAISED',
+} as const;
+export const FOCUS_RING_CLASS =
+   'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
+export const CHASE_LABEL = 'Chase';
+export const DAYS_LATE_LABEL = 'days late';
+export const QUICK_ADD_ID = 'quick-add';
+export const QUICK_ADD_LABEL = 'Quick add';
+export const QUICK_ADD_PLACEHOLDER =
+   'Write it like your khata... Rohan paid 1500 upi';
+export const QUICK_ADD_SUBMIT_LABEL = 'Add';
+export const QUICK_ADD_DISABLED_REASON =
+   'Saving lines arrives in a later slice.';
+
+// Placeholder page copy (PRD §5); empty states until each feature slice lands
+export const CASH_STATUS_PLACEHOLDER =
+   'Cash status appears here once the forecast is connected.';
+
+export const PAGE_COPY = {
+   today: {
+      title: 'Today',
+      empty: 'Nothing to chase yet. Raise this month\'s fees to fill the list.',
+   },
+   owed: {
+      title: 'Owed',
+      empty: 'No one owes you yet. Overdue families will be written here.',
+   },
+   students: {
+      title: 'Students',
+      empty: 'Your roster is empty. Add students to start invoicing.',
+   },
+   invoice: {
+      title: 'Invoice',
+      empty: 'This invoice has no timeline yet. Payments will be written here.',
+   },
+   forecast: {
+      title: 'Forecast',
+      empty: 'The cash forecast needs students and bills first.',
+   },
+   bills: {
+      title: 'Bills',
+      empty: 'No recurring bills yet. Add rent and other outgoings.',
+   },
+   pricing: {
+      title: 'Pricing',
+      empty: 'Plans and the business case will be written here.',
+   },
+   settings: {
+      title: 'Settings',
+      empty: 'Business name, UPI id and demo controls go here.',
+   },
+} as const;
+
+
