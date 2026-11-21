@@ -1,12 +1,11 @@
 // Purpose: the three Khata fonts (Anton, Kalam, Hind) as next/font objects with CSS variables.
 import { Anton, Hind, Kalam } from 'next/font/google';
-import { FONT_VARIABLES } from '../lib/constants';
 
 /** Why: big numbers and page titles; Anton only ships one weight. */
 export const anton = Anton({
    weight: '400',
    subsets: ['latin'],
-   variable: FONT_VARIABLES.display,
+   variable: '--font-anton',
    display: 'swap',
 });
 
@@ -14,7 +13,7 @@ export const anton = Anton({
 export const kalam = Kalam({
    weight: ['400', '700'],
    subsets: ['latin'],
-   variable: FONT_VARIABLES.hand,
+   variable: '--font-kalam',
    display: 'swap',
 });
 
@@ -22,6 +21,6 @@ export const kalam = Kalam({
 export const hind = Hind({
    weight: ['400', '500', '600', '700'],
    subsets: ['latin', 'devanagari'],
-   variable: FONT_VARIABLES.body,
+   variable: '--font-hind',
    display: 'swap',
 });

@@ -1,5 +1,6 @@
 // Purpose: root layout; wires fonts, skip link, notebook page, store provider and navigation.
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 import { RuledPage } from '../components/khata/RuledPage';
 import { Spine } from '../components/nav/Spine';
@@ -29,17 +30,21 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <StoreProvider>
                <SkipLink />
                <RuledPage>
-                  <Spine />
+                  <Suspense fallback={null}>
+                     <Spine />
+                  </Suspense>
                   <div className="flex flex-1 flex-col md:pl-64">
                      <main
                         id={MAIN_CONTENT_ID}
                         tabIndex={-1}
                         className="flex-1 px-4 pb-28 pt-6 md:pb-10 md:pl-16 md:pr-8"
                      >
-                        {children}
+                        <Suspense fallback={null}>{children}</Suspense>
                      </main>
                   </div>
-                  <TabBar />
+                  <Suspense fallback={null}>
+                     <TabBar />
+                  </Suspense>
                </RuledPage>
             </StoreProvider>
          </body>
