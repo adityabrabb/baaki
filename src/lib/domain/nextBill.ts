@@ -29,7 +29,7 @@ export interface NextBill {
 }
 
 /** Why: a bill due today still counts as next; only a day already past rolls to next month. */
-function dueDateOnOrAfter(dayOfMonth: number, today: string): string {
+export function dueDateOnOrAfter(dayOfMonth: number, today: string): string {
    const thisMonth = dateInMonth(monthKeyOf(today), dayOfMonth);
    if (!isBeforeDate(thisMonth, today)) return thisMonth;
    const nextMonth = monthKeyOf(addMonths(today, NEXT_MONTH_OFFSET));

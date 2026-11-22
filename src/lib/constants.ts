@@ -468,7 +468,7 @@ export const RELATIVE_PAST_SUFFIX = 'ago';
 export const GEMINI_API_KEY_ENV = 'GEMINI_API_KEY';
 export const GEMINI_MODEL_ENV = 'GEMINI_MODEL';
 export const GEMINI_MODEL_DEFAULT = 'gemini-2.5-flash';
-export const AI_TIMEOUT_MS = 8000;
+export const AI_TIMEOUT_MS = 20000;
 export const AI_TIMEOUT_MESSAGE = 'AI request timed out.';
 export const AI_MAX_REMINDER_CHARS = 400;
 export const AI_REMINDER_ROUTE = '/api/ai/reminder';
@@ -572,6 +572,79 @@ export const CHASE_SHEET_COPY = {
    sourceTemplate: 'Drafted from a template (no AI key or AI was unavailable).',
    logged: 'Logged on the invoice timeline.',
    noPhone: 'No phone number for this family. WhatsApp needs one.',
+} as const;
+
+// Forecast page (PRD §5 /forecast, §6): horizon toggle, chart, copy and colours
+export const FORECAST_WINDOWS = [30, 60, 90] as const;
+export const FORECAST_DEFAULT_WINDOW = 30;
+export const FORECAST_CHART_HEIGHT_PX = 320;
+export const FORECAST_WHATIF_ID = 'top_families_late' as const;
+export const FORECAST_WHATIF_CHIP_LABEL = `Top ${WHATIF_TOP_FAMILY_COUNT} pay ${WHATIF_LATE_DAYS} days late`;
+export const FORECAST_DATE_TICK_FORMAT = 'd MMM';
+export const FORECAST_CHART_COLORS = {
+   ink: '#1B2A6B',
+   marigold: '#F6A11A',
+   marginRed: '#D7263D',
+   grid: '#D9CBB0',
+} as const;
+export const FORECAST_BAND_OPACITY = 0.35;
+export const FORECAST_TICK_FONT_SIZE = 12;
+export const FORECAST_COPY = {
+   title: 'Cash forecast',
+   estimateNote: 'An estimate, not a promise. Check the assumptions below.',
+   horizonLabel: 'Days ahead',
+   whatIfLabel: 'What-if',
+   whatIfOn: 'The line shows the what-if. Your recorded data is unchanged.',
+   whatIfOff: 'Tap the chip to redraw the line with the what-if.',
+   expectedLegend: 'Expected balance',
+   bandLegend: 'Optimistic to pessimistic',
+   bufferLegend: 'Buffer',
+   billLegend: 'Bill due',
+   chartLabel: 'Forecast chart of expected cash with an optimistic to pessimistic band',
+   lowestPrefix: 'Lowest balance in this window:',
+   actionUnderBuffer: 'Chase the top families before then, or move a bill to a later day.',
+   actionAboveBuffer: 'Cash holds above the buffer; keep chasing overdue families.',
+   assumptionsTitle: 'Assumptions',
+   errorCopy: "Couldn't work out the forecast from this browser's data.",
+   noBillsNote: 'Add rent and other bills to see them on the chart.',
+} as const;
+
+// Pricing page (PRD §10): proposed plans, ROI line and the business case
+export const PRICING_PLANS = [
+   { id: 'free', name: 'Free', monthlyRupees: 0, summary: 'Up to 10 students, manual reminders' },
+   { id: 'pro', name: 'Pro', monthlyRupees: 299, summary: 'Unlimited students, AI reminders, forecast, what-if' },
+   { id: 'centre', name: 'Centre', monthlyRupees: 799, summary: 'Coaching centres, 3 staff logins, batch reports' },
+] as const;
+export const PRICING_COPY = {
+   label: 'Proposed pricing',
+   perMonth: '/month',
+   roi: 'One recovered ₹1,500 fee pays 5 months of Pro.',
+   assumption: 'Prices and the ROI line are assumptions, not customer results. No payment is taken in this demo.',
+   whoPaysTitle: 'Who pays',
+   whoPays: 'The tutor pays for her own plan. Parents pay their fees as before, by UPI or cash.',
+   whySwitchTitle: 'Why switch from the notebook',
+   whySwitch: "It answers \"who owes me\" and \"will I make rent\" in 5 seconds, and drafts the awkward message.",
+} as const;
+
+// Settings page (PRD §5 /settings): demo reset with an inline two-step confirm
+export const SETTINGS_COPY = {
+   resetTitle: 'Demo data',
+   resetNote: 'Restores the seeded demo: families, invoices, payments and bills. Changes made in this browser are replaced.',
+   resetButton: 'Reset demo data',
+   resetQuestion: 'Replace everything in this browser with the demo data?',
+   resetConfirm: 'Yes, reset',
+   resetCancel: 'Cancel',
+   resetDone: 'Demo data restored.',
+   resetError: "Couldn't reset this browser's storage. Try again.",
+} as const;
+
+// Bills page (PRD §5 /bills): read-only recurring bills with their next due date
+export const BILLS_COPY = {
+   title: 'Recurring bills',
+   note: 'Read-only. Bills leave on their due day and are always paid in full.',
+   dueLabel: 'Next due',
+   monthlyLabel: '/month',
+   errorCopy: "Couldn't load the bills from this browser's data.",
 } as const;
 
 

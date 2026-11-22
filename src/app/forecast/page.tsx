@@ -1,13 +1,16 @@
-// Purpose: /forecast route (PRD §5): cash next 30/60/90, placeholder until the forecast slice lands.
-import { PlaceholderPage } from '../../components/khata/PlaceholderPage';
+// Purpose: /forecast route (PRD §5, §6): 30/60/90-day cash forecast with the assumptions it rests on.
+import { ForecastView } from '../../components/forecast/ForecastView';
+import { PageHeading } from '../../components/khata/PageHeading';
+import { StoreGate } from '../../components/khata/StoreGate';
 import { PAGE_COPY } from '../../lib/constants';
 
 export default function ForecastPage() {
    return (
-      <PlaceholderPage
-         title={PAGE_COPY.forecast.title}
-         empty={PAGE_COPY.forecast.empty}
-      />
+      <>
+         <PageHeading title={PAGE_COPY.forecast.title} />
+         <StoreGate>
+            <ForecastView />
+         </StoreGate>
+      </>
    );
 }
-

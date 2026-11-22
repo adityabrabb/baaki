@@ -1,13 +1,16 @@
-// Purpose: /bills route (PRD §5): outgoing money, placeholder until the bills slice lands.
-import { PlaceholderPage } from '../../components/khata/PlaceholderPage';
+// Purpose: /bills route (PRD §5): recurring outgoing bills, read-only, with their next due dates.
+import { BillsView } from '../../components/bills/BillsView';
+import { PageHeading } from '../../components/khata/PageHeading';
+import { StoreGate } from '../../components/khata/StoreGate';
 import { PAGE_COPY } from '../../lib/constants';
 
 export default function BillsPage() {
    return (
-      <PlaceholderPage
-         title={PAGE_COPY.bills.title}
-         empty={PAGE_COPY.bills.empty}
-      />
+      <>
+         <PageHeading title={PAGE_COPY.bills.title} />
+         <StoreGate>
+            <BillsView />
+         </StoreGate>
+      </>
    );
 }
-
