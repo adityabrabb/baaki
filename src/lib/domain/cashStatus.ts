@@ -10,18 +10,22 @@ export interface CashStatus {
    owedThisMonth: number;
 }
 
+/** Why: one place sums payments, so cash in hand and the /bills cash edit agree. */
+export function totalReceived(state: StoreState): number {
+   return state.payments.reduce((sum, payment) => sum + payment.amount, 0);
+}
+
 /**
  * Why: cash on hand is the opening balance plus every recorded payment, the same
  * rule the forecast uses, so the Today sentence agrees with the forecast.
  */
 export function cashStatus(state: StoreState, today: string): CashStatus {
-   const received = state.payments.reduce((sum, payment) => sum + payment.amount, 0);
    const month = monthKeyOf(today);
    const owedThisMonth = state.invoices
       .filter((invoice) => invoice.month === month)
       .reduce((sum, invoice) => sum + outstandingOf(invoice, state.payments), 0);
    return {
-      balance: state.business.openingBalance + received,
+      balance: state.business.openingBalance + totalReceived(state),
       owedThisMonth,
    };
 }

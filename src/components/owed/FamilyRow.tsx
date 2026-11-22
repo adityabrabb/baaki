@@ -28,7 +28,7 @@ export function FamilyRow({ item, highlighted, onChase }: FamilyRowProps) {
          className={`min-w-0 border-2 border-l-6 border-ink border-l-stamp-red bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]${highlight}`}
       >
          <div className="flex flex-wrap items-start justify-between gap-3">
-            <h3 className="min-w-0 font-hand text-2xl font-bold break-words text-ink">
+            <h3 className="min-w-0 font-hand text-2xl font-bold text-ink">
                {item.familyName}
             </h3>
             <Stamp variant="overdue" />

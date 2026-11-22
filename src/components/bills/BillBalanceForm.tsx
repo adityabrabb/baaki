@@ -1,4 +1,4 @@
-// Purpose: opening balance and safety buffer form on /bills; each box shows its own inline error.
+// Purpose: cash in hand today and safety buffer form on /bills; each box shows its own inline error.
 import { useId, useState, type ChangeEvent, type FormEvent } from 'react';
 import { BILLS_COPY, INPUT_CLASS } from '../../lib/constants';
 import {
@@ -60,7 +60,7 @@ export function BillBalanceForm({ initial, onSubmit }: BillBalanceFormProps) {
          </h3>
          <FormField
             id={fieldId('openingBalance')}
-            label={BILLS_COPY.openingLabel}
+            label={BILLS_COPY.cashLabel}
             error={errors.openingBalance}
          >
             <input

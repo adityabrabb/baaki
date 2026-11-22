@@ -89,6 +89,16 @@ describe('parseBillDraft', () => {
 });
 
 describe('parseBalanceDraft', () => {
+   it('accepts zero cash in hand and rejects -1 and 1.5 for the cash box', () => {
+      expect(parseBalanceDraft({ openingBalance: 0, buffer: 0 }).success).toBe(true);
+      const negative = parseBalanceDraft({ openingBalance: -1, buffer: 0 });
+      if (negative.success) throw new Error('expected -1 to be rejected');
+      expect(negative.errors.openingBalance).toBe(BILL_ERRORS.balanceNegative);
+      const fraction = parseBalanceDraft({ openingBalance: 1.5, buffer: 0 });
+      if (fraction.success) throw new Error('expected 1.5 to be rejected');
+      expect(fraction.errors.openingBalance).toBe(BILL_ERRORS.wholeRupees);
+   });
+
    it('accepts zero and positive whole rupees', () => {
       expect(parseBalanceDraft({ openingBalance: 0, buffer: 5000 })).toEqual({
          success: true,

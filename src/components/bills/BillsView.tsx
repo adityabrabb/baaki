@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { BILLS_COPY, BILL_DAY_MIN, PAGE_COPY } from '../../lib/constants';
 import { addBill, deleteBill, updateBill } from '../../lib/domain/billEdits';
 import type { BalanceInput, BillDraft, BillInput } from '../../lib/domain/billInput';
-import { setBalances } from '../../lib/domain/businessEdits';
+import { openingFromCash, setBalances } from '../../lib/domain/businessEdits';
+import { cashStatus } from '../../lib/domain/cashStatus';
 import { commitState } from '../../lib/store/clientStore';
 import { useStore } from '../../lib/store/useStore';
 import type { StoreState } from '../../lib/types';
@@ -51,7 +52,8 @@ export function BillsView() {
    };
 
    const handleBalances = (input: BalanceInput) => {
-      save(setBalances(state, input.openingBalance, input.buffer), BILLS_COPY.balanceSaved);
+      const opening = openingFromCash(state, input.openingBalance);
+      save(setBalances(state, opening, input.buffer), BILLS_COPY.balanceSaved);
    };
 
    const formDraft: BillDraft | null =
@@ -110,7 +112,7 @@ export function BillsView() {
          )}
          <BillBalanceForm
             initial={{
-               openingBalance: state.business.openingBalance,
+               openingBalance: cashStatus(state, today).balance,
                buffer: state.business.buffer,
             }}
             onSubmit={handleBalances}

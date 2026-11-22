@@ -47,7 +47,7 @@ export function ChaseCard({
          className={`min-w-0 border-2 border-ink border-l-6 bg-chalk p-4 shadow-[4px_4px_0_var(--ink)] ${RELIABILITY_STYLE[reliability].edge}`}
       >
          <div className="flex items-start justify-between gap-3">
-            <h3 className="min-w-0 font-hand text-2xl font-bold break-words text-ink">
+            <h3 className="min-w-0 font-hand text-2xl font-bold text-ink">
                {familyName}
             </h3>
             <span
