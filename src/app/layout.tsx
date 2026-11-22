@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                      <main
                         id={MAIN_CONTENT_ID}
                         tabIndex={-1}
-                        className="flex-1 px-4 pb-28 pt-6 md:pb-10 md:pl-16 md:pr-8"
+                        className="flex-1 px-4 pb-28 pt-6 md:pb-10 md:pl-16 md:pr-8 lg:max-w-[75rem]"
                      >
                         <Suspense fallback={null}>{children}</Suspense>
                      </main>

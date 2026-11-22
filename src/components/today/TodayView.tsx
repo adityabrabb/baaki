@@ -33,17 +33,20 @@ export function TodayView() {
    const top = queue.slice(0, TODAY_CHASE_LIMIT);
 
    return (
-      <div className="mt-6 flex flex-col gap-8">
-         <CashStatus balance={cash.balance} owedThisMonth={cash.owedThisMonth} />
-         <QuickAdd />
-         {bill ? (
-            <NextBillCard
-               bill={bill}
-               headline={billHeadline(bill, chaseTargets(state, today), today)}
-            />
-         ) : (
-            <EmptyNote text={TODAY_COPY.noBill} />
-         )}
+      <div className="mt-6 flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:items-start">
+         <div className="flex flex-col gap-8">
+            <CashStatus balance={cash.balance} owedThisMonth={cash.owedThisMonth} />
+            <QuickAdd />
+            {bill ? (
+               <NextBillCard
+                  bill={bill}
+                  headline={billHeadline(bill, chaseTargets(state, today), today)}
+               />
+            ) : (
+               <EmptyNote text={TODAY_COPY.noBill} />
+            )}
+            <TodayAlerts alerts={alerts(state, today)} />
+         </div>
          <section className="flex flex-col gap-3">
             <h2 className="font-display text-2xl text-ink uppercase">
                {TODAY_COPY.chaseTitle}
@@ -57,7 +60,6 @@ export function TodayView() {
                <p className="font-body text-sm text-ink-soft">{TODAY_COPY.chaseMore}</p>
             )}
          </section>
-         <TodayAlerts alerts={alerts(state, today)} />
       </div>
    );
 }

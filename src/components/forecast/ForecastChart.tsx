@@ -13,6 +13,7 @@ import {
    FORECAST_BAND_OPACITY,
    FORECAST_CHART_COLORS,
    FORECAST_CHART_HEIGHT_PX,
+   FORECAST_BILL_LABEL_CLASS,
    FORECAST_COPY,
    FORECAST_SCENARIO_DASH,
    FORECAST_TICK_FONT_SIZE,
@@ -104,6 +105,7 @@ export function ForecastChart({ rows, buffer, bills }: ForecastChartProps) {
                      strokeDasharray="4 4"
                      label={{
                         value: `${bill.name} ${formatINR(bill.amount)}`,
+                        className: FORECAST_BILL_LABEL_CLASS,
                         position: 'insideTop',
                         fill: colors.ink,
                         fontSize: FORECAST_TICK_FONT_SIZE,

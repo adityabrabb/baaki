@@ -5,6 +5,7 @@ import {
    FOCUS_RING_CLASS,
    OWED_FAMILY_ROW_PREFIX,
    OWED_HIGHLIGHT_CLASS,
+   PRIMARY_BUTTON_CLASS,
    RELIABILITY_LABELS,
    ROW_SEPARATOR,
 } from '../../lib/constants';
@@ -24,7 +25,7 @@ export function FamilyRow({ item, highlighted, onChase }: FamilyRowProps) {
    return (
       <article
          id={`${OWED_FAMILY_ROW_PREFIX}-${item.familyId}`}
-         className={`min-w-0 border-2 border-ink bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]${highlight}`}
+         className={`min-w-0 border-2 border-l-6 border-ink border-l-stamp-red bg-chalk p-4 shadow-[4px_4px_0_var(--ink)]${highlight}`}
       >
          <div className="flex flex-wrap items-start justify-between gap-3">
             <h3 className="min-w-0 font-hand text-2xl font-bold break-words text-ink">
@@ -44,7 +45,7 @@ export function FamilyRow({ item, highlighted, onChase }: FamilyRowProps) {
             type="button"
             onClick={() => onChase(item)}
             aria-label={`${CHASE_LABEL} ${item.familyName}`}
-            className={`mt-3 min-h-11 min-w-11 border-2 border-ink bg-ink px-4 font-body font-semibold text-chalk shadow-[4px_4px_0_var(--ink)] ${FOCUS_RING_CLASS}`}
+            className={`mt-3 min-h-11 min-w-11 border-2 border-ink px-4 font-body font-semibold ${PRIMARY_BUTTON_CLASS} ${FOCUS_RING_CLASS}`}
          >
             {CHASE_LABEL}
          </button>

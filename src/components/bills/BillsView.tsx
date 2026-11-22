@@ -93,7 +93,7 @@ export function BillsView() {
          {state.bills.length === 0 ? (
             <EmptyNote text={PAGE_COPY.bills.empty} />
          ) : (
-            <ul className="flex flex-col gap-4">
+            <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                {state.bills.map((bill) => (
                   <BillCard
                      key={bill.id}

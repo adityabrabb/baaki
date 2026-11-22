@@ -26,3 +26,17 @@
       --margin-start: calc(2.5rem + 16rem);
    }
 }
+
+/* Why: from lg up the Spine sits flush to the left edge, so the margin starts right after the 16rem Spine. */
+@media (min-width: 64rem) {
+   .ruled-page {
+      --margin-start: 16rem;
+   }
+}
+
+/* Why: phones (under 640px) hide bill tag text on the chart; the bill list under it carries the same facts. */
+@media (max-width: 39.99rem) {
+   .forecast-bill-label {
+      display: none;
+   }
+}

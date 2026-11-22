@@ -8,6 +8,7 @@ import {
    PAGE_COPY,
    STORE_ERROR_COPY,
 } from '../../lib/constants';
+import { formatINR } from '../../lib/domain/formatINR';
 import { useStore } from '../../lib/store/useStore';
 import type { StoreState } from '../../lib/types';
 import { EmptyNote } from '../khata/EmptyNote';
@@ -81,6 +82,15 @@ export function ForecastView() {
             buffer={model.buffer}
             bills={model.bills}
          />
+         {model.bills.length > 0 && (
+            <ul className="flex flex-col gap-2 font-body text-base text-ink sm:hidden">
+               {model.bills.map((bill) => (
+                  <li key={`${bill.label}-${bill.name}`}>
+                     {`${bill.name} ${formatINR(bill.amount)} · ${bill.label}`}
+                  </li>
+               ))}
+            </ul>
+         )}
          <ChartLegend />
          <p className="font-hand text-xl text-ink">{model.sentence}</p>
          {model.bills.length === 0 && (

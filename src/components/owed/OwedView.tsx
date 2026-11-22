@@ -48,7 +48,7 @@ export function OwedView() {
             {items.length === 0 ? (
                <EmptyNote text={OWED_COPY.noOverdue} />
             ) : (
-               <ul className="flex flex-col gap-4">
+               <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                   {items.map((item) => (
                      <li key={item.familyId}>
                         <FamilyRow

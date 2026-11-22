@@ -7,7 +7,7 @@ export interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const VARIANT_CLASSES = {
-   primary: 'bg-ink text-chalk',
+   primary: 'bg-ink text-chalk shadow-[4px_4px_0_var(--mustard)] active:shadow-none',
    secondary: 'bg-chalk text-ink',
 } as const;
 
@@ -22,7 +22,7 @@ export function ActionButton({
       <button
          type={type}
          {...rest}
-         className={`min-h-11 min-w-11 border-2 border-ink px-4 font-body text-base font-bold ${VARIANT_CLASSES[variant]} ${FOCUS_RING_CLASS} ${className}`}
+         className={`min-h-11 min-w-11 border-2 border-ink px-4 font-body text-base font-bold hover:-translate-x-0.5 hover:-translate-y-0.5 ${VARIANT_CLASSES[variant]} ${FOCUS_RING_CLASS} ${className}`}
       />
    );
 }

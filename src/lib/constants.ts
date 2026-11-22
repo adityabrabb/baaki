@@ -256,7 +256,10 @@ export const STAMP_LABELS = {
    not_covered: 'NOT COVERED',
 } as const;
 export const FOCUS_RING_CLASS =
-   'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper';
+   'focus-visible:outline-[3px] focus-visible:outline-solid focus-visible:outline-mustard focus-visible:outline-offset-2';
+export const FORECAST_BILL_LABEL_CLASS = 'forecast-bill-label';
+export const PRIMARY_BUTTON_CLASS =
+   'bg-ink text-chalk shadow-[4px_4px_0_var(--mustard)] hover:-translate-x-0.5 hover:-translate-y-0.5 active:shadow-none';
 export const CHASE_LABEL = 'Chase';
 export const DAYS_LATE_LABEL = 'days late';
 export const QUICK_ADD_ID = 'quick-add';

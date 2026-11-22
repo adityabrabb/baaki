@@ -1,19 +1,45 @@
+/* Purpose: global base styles, status colour tokens, focus ring, button and card motion, and reduced-motion handling. */
 @import "tailwindcss";
 @import "../styles/tokens.css";
 @import "../styles/khata.css";
 
+:root {
+   --red: #C8251A;
+   --mustard: #F6A11A;
+   --green: #146C36;
+}
+
+@theme inline {
+   --color-stamp-red: var(--red);
+   --color-mustard: var(--mustard);
+   --color-stamp-green: var(--green);
+}
+
 body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-hind), system-ui, sans-serif;
+   background: var(--paper);
+   color: var(--ink);
+   font-family: var(--font-hind), system-ui, sans-serif;
+}
+
+/* Why: buttons and cards lift on a 150ms ease so the stamp-style press feels physical. */
+button,
+article,
+a {
+   transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+/* Why: a 3px solid mustard outline on every control keeps keyboard focus visible on paper. */
+:focus-visible {
+   outline: 3px solid var(--mustard);
+   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+   *,
+   *::before,
+   *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+   }
 }

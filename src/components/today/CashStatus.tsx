@@ -12,7 +12,7 @@ export interface CashStatusProps {
 export function CashStatus({ balance, owedThisMonth }: CashStatusProps) {
    return (
       <section className="flex flex-col gap-2">
-         <BigRupee amount={balance} label={TODAY_COPY.cashLabel} />
+         <BigRupee amount={balance} label={TODAY_COPY.cashLabel} hero />
          <p className="font-hand text-2xl break-words text-ink">
             {`${formatINR(owedThisMonth)} ${TODAY_COPY.owedThisMonth}.`}
          </p>
