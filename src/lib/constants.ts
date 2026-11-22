@@ -107,6 +107,7 @@ export const PESSIMISTIC_EXTRA_DELAY_DAYS = 15;
 export const CHASE_RECENT_REMINDER_DAYS = 3;
 export const WHATIF_LATE_DAYS = 15;
 export const WHATIF_TOP_FAMILY_COUNT = 5;
+export const RISKY_BADGE = 'risky' as const;
 
 // Reliability labels and thresholds (PRD §6)
 export const ON_TIME_MAX_DELAY_DAYS = 0;
@@ -127,8 +128,17 @@ export const FORECAST_ASSUMPTIONS = [
    'Overdue fees are not counted until they are paid.',
    'Bills leave on their day of the month and are always paid in full.',
    'Partial payments reduce what is still expected; fully paid invoices add nothing.',
-   'Students who leave and fee changes are not modelled.',
+   'Fees for future months are projected for active students not yet invoiced, due on the fee day; Risky families are left out.',
 ] as const;
+export const SCENARIO_LINE_COPY = {
+   prefix: 'Scenario:',
+   normalDetail: 'No what-if picked; this is the expected forecast.',
+   familyLate: (days: number) => `Shifts one family's expected fees ${days} days later.`,
+   topLate: (count: number, days: number) =>
+      `Shifts the ${count} largest families' expected fees ${days} days later.`,
+   lose: (count: number) => `Removes ${count} students' projected fees from next month.`,
+   raise: (percent: number) => `Raises projected fees ${percent}% from next month.`,
+} as const;
 
 // Alerts (PRD §6): kinds, the message stem and the action each alert names
 export const ALERT_KINDS = ['uncovered_bill', 'below_buffer'] as const;
@@ -155,6 +165,7 @@ export const WHATIF_LABELS = {
    raise_fees: 'Fees rise next month',
 } as const;
 export const WHATIF_LOST_STUDENT_COUNT = 2;
+
 export const WHATIF_FEE_RISE_PERCENT = 10;
 export const NEXT_MONTH_OFFSET = 1;
 
@@ -471,6 +482,9 @@ export const GEMINI_MODEL_DEFAULT = 'gemini-2.5-flash';
 export const AI_TIMEOUT_MS = 20000;
 export const AI_TIMEOUT_MESSAGE = 'AI request timed out.';
 export const AI_MAX_REMINDER_CHARS = 400;
+export const REMINDER_LINK_PATTERN = /(?:https?:\/\/|upi:\/\/|(?:www\.)?wa\.me\/)\S+/gi;
+export const REMINDER_WHITESPACE_PATTERN = /\s+/g;
+export const REMINDER_LINK_SEPARATOR = ' ';
 export const AI_REMINDER_ROUTE = '/api/ai/reminder';
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 export const AI_PARSE_ROUTE = '/api/ai/parse';
@@ -485,7 +499,7 @@ export const AI_PROMPT_RULES = [
    'Write one WhatsApp fee reminder for a home tutor to send a parent.',
    'Plain text only, no markdown, no emoji, at most 400 characters.',
    'Polite and synthetic; never give tax, legal or financial advice.',
-   'Include the amount and the UPI link exactly as given.',
+   'Include the amount. Do not write any link or URL; Baaki adds the payment link.',
 ] as const;
 export const AI_PARSE_PROMPT =
    'Read one quick-add line from a tutor and reply with JSON only: {"type":"payment"|"bill_paid"|"unknown","student":string|null,"amount":integer|null,"method":"upi"|"cash"|null,"date":"YYYY-MM-DD"|null}. Use today as the reference day for words like yesterday. Line:';

@@ -15,7 +15,7 @@ import { NavLink } from './NavLink';
 export function Spine() {
    const pathname = usePathname();
    return (
-      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:h-screen md:w-64 md:flex-col md:gap-4 md:border-r-4 md:border-ink md:bg-chalk md:px-4 md:py-8">
+      <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col md:gap-4 md:border-r-4 md:border-ink md:bg-chalk md:px-4 md:py-8">
          <p className="font-display text-2xl leading-none text-ink uppercase">
             {BUSINESS_NAME}
          </p>

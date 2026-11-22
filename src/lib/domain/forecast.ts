@@ -4,11 +4,12 @@ import {
    FORECAST_ASSUMPTIONS,
    FORECAST_HORIZON_DAYS,
    PESSIMISTIC_EXTRA_DELAY_DAYS,
+   RISKY_BADGE,
 } from '../constants';
 import { addDays, dateInMonth, diffDays, isAfterDate, monthKeyOf } from '../dates';
-import type { Bill, Invoice, Payment, StoreState } from '../types';
+import type { Bill, StoreState } from '../types';
 import { expectedPayDate } from './expectedPayDate';
-import { reliability, type Reliability } from './reliability';
+import { pendingFees } from './pendingFees';
 
 /** Running cash balance on one day under each scenario. */
 export interface ForecastDay {
@@ -52,29 +53,6 @@ function notBefore(date: string, today: string): string {
    return isAfterDate(today, date) ? today : date;
 }
 
-/** Why: partial payments reduce what an invoice still owes. */
-function outstandingOf(invoice: Invoice, payments: Payment[]): number {
-   const paid = payments
-      .filter((payment) => payment.invoiceId === invoice.id)
-      .reduce((sum, payment) => sum + payment.amount, 0);
-   return Math.max(0, invoice.amount - paid);
-}
-
-/** Why: reliability is computed once per family, not once per invoice. */
-function memoReliability(
-   state: StoreState,
-   today: string,
-): (familyId: string) => Reliability {
-   const cache = new Map<string, Reliability>();
-   return (familyId) => {
-      const cached = cache.get(familyId);
-      if (cached !== undefined) return cached;
-      const fresh = reliability(state, familyId, today);
-      cache.set(familyId, fresh);
-      return fresh;
-   };
-}
-
 /** Why: cash on hand is the opening balance plus every payment already received. */
 function cashOnHand(state: StoreState): number {
    const received = state.payments.reduce(
@@ -84,29 +62,24 @@ function cashOnHand(state: StoreState): number {
    return state.business.openingBalance + received;
 }
 
-/** Why: open invoices land on their due or expected dates; overdue ones only count optimistically. */
-function addInflows(
-   flows: Flows,
-   state: StoreState,
-   today: string,
-): void {
-   const historyOf = memoReliability(state, today);
-   for (const invoice of state.invoices) {
-      const owed = outstandingOf(invoice, state.payments);
-      if (owed === 0) continue;
-      const history = historyOf(invoice.familyId);
-      const avg = history.avgDelayDays;
+/**
+ * Why: open invoices and projected fees land on their due or expected dates;
+ * overdue ones only count optimistically, and Risky families add no pessimistic flow.
+ */
+function addInflows(flows: Flows, state: StoreState, today: string): void {
+   for (const fee of pendingFees(state, today)) {
       const at = (date: string): number =>
          diffDays(notBefore(date, today), today);
-      addAt(flows.optimistic, at(invoice.dueDate), owed);
-      if (isAfterDate(today, invoice.dueDate)) continue;
-      addAt(flows.expected, at(expectedPayDate(invoice.dueDate, avg)), owed);
-      if (history.badge !== 'risky') {
+      addAt(flows.optimistic, at(fee.dueDate), fee.amount);
+      if (isAfterDate(today, fee.dueDate)) continue;
+      const expected = expectedPayDate(fee.dueDate, fee.avgDelayDays);
+      addAt(flows.expected, at(expected), fee.amount);
+      if (fee.badge !== RISKY_BADGE) {
          const slipped = expectedPayDate(
-            invoice.dueDate,
-            avg + PESSIMISTIC_EXTRA_DELAY_DAYS,
+            fee.dueDate,
+            fee.avgDelayDays + PESSIMISTIC_EXTRA_DELAY_DAYS,
          );
-         addAt(flows.pessimistic, at(slipped), owed);
+         addAt(flows.pessimistic, at(slipped), fee.amount);
       }
    }
 }

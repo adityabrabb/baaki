@@ -1,10 +1,7 @@
 // Purpose: four what-if scenarios laid over the expected forecast (PRD §6).
 // Pure: never mutates state; each scenario is a delta on forecast().days expected.
 import {
-   FEE_DUE_DAY,
    FORECAST_HORIZON_DAYS,
-   NEXT_MONTH_OFFSET,
-   PERCENT_SCALE,
    WHATIF_FEE_RISE_PERCENT,
    WHATIF_LABELS,
    WHATIF_LATE_DAYS,
@@ -12,18 +9,11 @@ import {
    WHATIF_SCENARIOS,
    WHATIF_TOP_FAMILY_COUNT,
 } from '../constants';
-import {
-   addMonths,
-   dateInMonth,
-   diffDays,
-   isAfterDate,
-   monthKeyOf,
-} from '../dates';
-import type { StoreState, Student } from '../types';
-import { outstandingOf } from './chasePriority';
-import { expectedPayDate } from './expectedPayDate';
+import { isAfterDate } from '../dates';
+import type { StoreState } from '../types';
 import { forecast, type ForecastDay } from './forecast';
-import { reliability } from './reliability';
+import { type PendingFee, pendingFees } from './pendingFees';
+import { lateFlows, lostFlows, raiseFlows } from './whatIfFlows';
 
 export type WhatIfId = (typeof WHATIF_SCENARIOS)[number];
 
@@ -53,107 +43,25 @@ export interface WhatIfScenario {
    dipsBelowBuffer: boolean;
 }
 
-/** Why: a flow array holds one net amount per horizon day, zero by default. */
-function zeros(): number[] {
-   return new Array<number>(FORECAST_HORIZON_DAYS).fill(0);
+/**
+ * Why: only fees still expected can move. Overdue fees are not in the expected
+ * forecast, so a what-if never touches them.
+ */
+function expectedFees(state: StoreState, today: string): PendingFee[] {
+   return pendingFees(state, today).filter(
+      (fee) => !isAfterDate(today, fee.dueDate),
+   );
 }
 
-/** Why: adds to a horizon day only; dates outside the window are ignored. */
-function addAt(flow: number[], offset: number, amount: number): void {
-   if (offset >= 0 && offset < flow.length) flow[offset] += amount;
-}
-
-/** Why: forecast never books money in the past, so offsets clamp to today. */
-function offsetFrom(date: string, today: string): number {
-   return diffDays(isAfterDate(today, date) ? today : date, today);
-}
-
-/** Why: families are ranked by open money, the basis for "top 5 by amount". */
-function familiesByOpenBalance(state: StoreState): string[] {
+/** Why: families are ranked by their upcoming expected fees, the basis for "top 5". */
+function familiesByUpcomingFees(fees: PendingFee[]): string[] {
    const totals = new Map<string, number>();
-   for (const invoice of state.invoices) {
-      const owed = outstandingOf(invoice, state.payments);
-      if (owed === 0) continue;
-      totals.set(invoice.familyId, (totals.get(invoice.familyId) ?? 0) + owed);
+   for (const fee of fees) {
+      totals.set(fee.familyId, (totals.get(fee.familyId) ?? 0) + fee.amount);
    }
    return [...totals.entries()]
       .sort(([idA, a], [idB, b]) => b - a || idA.localeCompare(idB))
       .map(([id]) => id);
-}
-
-/** Why: students leaving or re-priced are the highest fees first (worst case). */
-function activeByFeeDesc(state: StoreState): Student[] {
-   return state.students
-      .filter((student) => student.active)
-      .sort((a, b) => b.feeAmount - a.feeAmount || a.id.localeCompare(b.id));
-}
-
-/** Why: fee changes and leavers hit from the next month's fee due date. */
-function nextFeeOffset(today: string): number {
-   const monthKey = monthKeyOf(addMonths(today, NEXT_MONTH_OFFSET));
-   return diffDays(dateInMonth(monthKey, FEE_DUE_DAY), today);
-}
-
-/**
- * Why: a late family moves each open invoice's expected inflow by extra days:
- * the old expected day loses the owed amount, the later day gains it.
- */
-function lateFlows(
-   state: StoreState,
-   today: string,
-   familyIds: string[],
-   extraDays: number,
-): number[] {
-   const flows = zeros();
-   const targets = new Set(familyIds);
-   for (const invoice of state.invoices) {
-      if (!targets.has(invoice.familyId)) continue;
-      const owed = outstandingOf(invoice, state.payments);
-      if (owed === 0) continue;
-      const avg = reliability(state, invoice.familyId, today).avgDelayDays;
-      const now = expectedPayDate(invoice.dueDate, avg);
-      const later = expectedPayDate(invoice.dueDate, avg + extraDays);
-      addAt(flows, offsetFrom(now, today), -owed);
-      addAt(flows, offsetFrom(later, today), owed);
-   }
-   return flows;
-}
-
-/** Why: leavers' fees stop being collected from next month's due date. */
-function lostFlows(
-   state: StoreState,
-   today: string,
-   lostCount: number,
-): {
-   flows: number[];
-   count: number;
-} {
-   const leavers = activeByFeeDesc(state).slice(0, lostCount);
-   const lost = leavers.reduce((sum, student) => sum + student.feeAmount, 0);
-   const flows = zeros();
-   addAt(flows, nextFeeOffset(today), -lost);
-   return { flows, count: leavers.length };
-}
-
-/** Why: a fee rise is rounded per student to whole rupees, from next month. */
-function raiseFlows(
-   state: StoreState,
-   today: string,
-   feeRisePercent: number,
-): {
-   flows: number[];
-   count: number;
-} {
-   const active = activeByFeeDesc(state);
-   const rise = active.reduce(
-      (sum, student) =>
-         sum +
-         Math.round((student.feeAmount * feeRisePercent) / PERCENT_SCALE),
-      0,
-   );
-   const flows = zeros();
-   addAt(flows, nextFeeOffset(today), rise);
-   return { flows, count: active.length };
 }
 
 /**
@@ -187,8 +95,8 @@ function buildScenario(
 
 /**
  * Why: the four PRD scenarios, all defaulted from the data: the family with the
- * most money open, the top five by open money, the two highest-fee leavers, and
- * a fee rise on every active student.
+ * most upcoming fees, the top five by upcoming fees, the two highest-fee leavers,
+ * and a fee rise on every projected fee.
  */
 export function whatIf(
    state: StoreState,
@@ -197,35 +105,44 @@ export function whatIf(
 ): WhatIfScenario[] {
    const base = forecast(state, today).days;
    const buffer = state.business.buffer;
-   const ranked = familiesByOpenBalance(state);
+   const fees = expectedFees(state, today);
+   const ranked = familiesByUpcomingFees(fees);
    const chosen =
       options.familyId === undefined
          ? ranked.slice(0, 1)
          : ranked.filter((id) => id === options.familyId);
    const top = ranked.slice(0, WHATIF_TOP_FAMILY_COUNT);
    const lost = lostFlows(
-      state,
+      fees,
       today,
       options.lostCount ?? WHATIF_LOST_STUDENT_COUNT,
+      FORECAST_HORIZON_DAYS,
    );
    const raised = raiseFlows(
-      state,
+      fees,
       today,
       options.feeRisePercent ?? WHATIF_FEE_RISE_PERCENT,
+      FORECAST_HORIZON_DAYS,
    );
 
    return [
       buildScenario(
          'family_late',
          base,
-         lateFlows(state, today, chosen, options.lateDays ?? WHATIF_LATE_DAYS),
+         lateFlows(
+            fees,
+            today,
+            chosen,
+            options.lateDays ?? WHATIF_LATE_DAYS,
+            FORECAST_HORIZON_DAYS,
+         ),
          buffer,
          chosen.length,
       ),
       buildScenario(
          'top_families_late',
          base,
-         lateFlows(state, today, top, WHATIF_LATE_DAYS),
+         lateFlows(fees, today, top, WHATIF_LATE_DAYS, FORECAST_HORIZON_DAYS),
          buffer,
          top.length,
       ),

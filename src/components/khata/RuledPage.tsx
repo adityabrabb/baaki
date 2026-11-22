@@ -7,7 +7,7 @@ export function RuledPage({ children }: { children: ReactNode }) {
    const pageStyle = { '--margin-x': '26px' } as CSSProperties;
    return (
       <div
-         className="ruled-page flex min-h-dvh flex-1 flex-col pl-10"
+         className="ruled-page flex min-h-dvh flex-1 flex-col pl-10 md:flex-row md:items-start"
          style={pageStyle}
       >
          {children}

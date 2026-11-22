@@ -18,6 +18,7 @@ import {
    type WhatIfPoint,
 } from '../../lib/domain/whatIf';
 import type { StoreState } from '../../lib/types';
+import { scenarioLine } from '../../lib/domain/scenarioLine';
 import { comparisonSentence } from './whatIfSentence';
 
 /** The one what-if picked on the page (null = Normal) and its slider values. */
@@ -156,5 +157,6 @@ export function buildForecastModel(
    const sentence = active
       ? comparisonSentence(active.label, normal, active.points, buffer)
       : lowestSentence(normal, buffer, today);
-   return { rows, buffer, bills, assumptions: result.assumptions, sentence };
+   const assumptions = [...result.assumptions, scenarioLine(selection)];
+   return { rows, buffer, bills, assumptions, sentence };
 }

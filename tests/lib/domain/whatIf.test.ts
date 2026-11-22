@@ -5,9 +5,10 @@ import {
    OPENING_BALANCE,
    WHATIF_SCENARIOS,
 } from '../../../src/lib/constants';
+import { forecast } from '../../../src/lib/domain/forecast';
 import { whatIf } from '../../../src/lib/domain/whatIf';
 import { buildSeedState } from '../../../src/lib/store/seed';
-import { TODAY, makeState } from '../../fixtures/state';
+import { TODAY, bill, invoice, makeState } from '../../fixtures/state';
 
 const student = {
    id: 's1',
@@ -38,11 +39,11 @@ describe('whatIf', () => {
       expect(loseStudents.endDelta).toBe(0);
    });
 
-   it('adds a 10% fee rise from next month for each active student', () => {
+   it('adds a 10% rise to each projected fee from next month (Apr, May, Jun)', () => {
       const scenarios = whatIf(makeState({ students: [student] }), TODAY);
       const raise = scenarios.find((s) => s.id === 'raise_fees');
       expect(raise?.affectedCount).toBe(1);
-      expect(raise?.endDelta).toBe(200);
+      expect(raise?.endDelta).toBe(600);
    });
 
    it('takes the fee-rise percent from options', () => {
@@ -50,7 +51,7 @@ describe('whatIf', () => {
          feeRisePercent: 20,
       });
       const raise = scenarios.find((s) => s.id === 'raise_fees');
-      expect(raise?.endDelta).toBe(400);
+      expect(raise?.endDelta).toBe(1200);
    });
 
    it('applies zero late days, zero leavers and zero rise as no change', () => {
@@ -71,6 +72,37 @@ describe('whatIf', () => {
       });
       const lost = scenarios.find((s) => s.id === 'lose_students');
       expect(lost?.affectedCount).toBe(1);
-      expect(lost?.endDelta).toBe(-2000);
+      expect(lost?.endDelta).toBe(-6000);
+   });
+
+   it('keeps day 0 equal to normal in every scenario', () => {
+      const state = makeState({
+         students: [student],
+         invoices: [invoice('t1', 'fa', TODAY, 1500)],
+      });
+      const normal = forecast(state, TODAY).days[0].expected;
+      for (const scenario of whatIf(state, TODAY)) {
+         expect(scenario.days[0].balance).toBe(normal);
+      }
+   });
+
+   it('lowers the balance on the first bill after the fee day for top 5 late', () => {
+      const families = ['f1', 'f2', 'f3', 'f4', 'f5'];
+      const students = families.map((familyId, i) => ({
+         ...student,
+         id: `s${i + 1}`,
+         familyId,
+      }));
+      const state = makeState({
+         students,
+         bills: [bill('bill-helper', 'Helper salary', 6000, 7)],
+      });
+      const billDate = '2025-04-07';
+      const normal = forecast(state, TODAY).days.find((d) => d.date === billDate);
+      const late = whatIf(state, TODAY).find((s) => s.id === 'top_families_late');
+      const lateDay = late?.days.find((d) => d.date === billDate);
+      expect(normal?.expected).toBe(OPENING_BALANCE + 5 * 2000 - 6000);
+      expect(lateDay?.balance).toBe(OPENING_BALANCE - 6000);
+      expect(lateDay?.balance).toBeLessThan(normal?.expected ?? 0);
    });
 });

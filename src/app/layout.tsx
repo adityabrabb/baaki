@@ -33,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                   <Suspense fallback={null}>
                      <Spine />
                   </Suspense>
-                  <div className="flex flex-1 flex-col md:pl-64">
+                  <div className="flex flex-1 flex-col">
                      <main
                         id={MAIN_CONTENT_ID}
                         tabIndex={-1}
