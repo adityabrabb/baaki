@@ -44,4 +44,33 @@ describe('whatIf', () => {
       expect(raise?.affectedCount).toBe(1);
       expect(raise?.endDelta).toBe(200);
    });
+
+   it('takes the fee-rise percent from options', () => {
+      const scenarios = whatIf(makeState({ students: [student] }), TODAY, {
+         feeRisePercent: 20,
+      });
+      const raise = scenarios.find((s) => s.id === 'raise_fees');
+      expect(raise?.endDelta).toBe(400);
+   });
+
+   it('applies zero late days, zero leavers and zero rise as no change', () => {
+      const state = makeState({ students: [student] });
+      const scenarios = whatIf(state, TODAY, {
+         lateDays: 0,
+         lostCount: 0,
+         feeRisePercent: 0,
+      });
+      expect(scenarios.find((s) => s.id === 'family_late')?.endDelta).toBe(0);
+      expect(scenarios.find((s) => s.id === 'lose_students')?.endDelta).toBe(0);
+      expect(scenarios.find((s) => s.id === 'raise_fees')?.endDelta).toBe(0);
+   });
+
+   it('takes the leaver count from options', () => {
+      const scenarios = whatIf(makeState({ students: [student] }), TODAY, {
+         lostCount: 1,
+      });
+      const lost = scenarios.find((s) => s.id === 'lose_students');
+      expect(lost?.affectedCount).toBe(1);
+      expect(lost?.endDelta).toBe(-2000);
+   });
 });

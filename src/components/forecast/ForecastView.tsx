@@ -1,5 +1,5 @@
 'use client';
-// Purpose: client view for /forecast: window toggle, what-if chip, chart, legend, lowest-balance sentence and assumptions.
+// Purpose: client view for /forecast: window toggle, what-if picker and controls, chart, legend, comparison sentence and assumptions.
 import { useState } from 'react';
 import {
    FORECAST_COPY,
@@ -12,22 +12,28 @@ import { useStore } from '../../lib/store/useStore';
 import type { StoreState } from '../../lib/types';
 import { EmptyNote } from '../khata/EmptyNote';
 import { AssumptionsList } from './AssumptionsList';
-import { buildForecastModel, type ForecastModel } from './forecastModel';
+import {
+   buildForecastModel,
+   DEFAULT_WHATIF_SELECTION,
+   type ForecastModel,
+   type WhatIfSelection,
+} from './forecastModel';
 import { ForecastChart } from './ForecastChart';
 import { ChartLegend } from './ChartLegend';
 import { HorizonToggle } from './HorizonToggle';
-import { WhatIfChip } from './WhatIfChip';
+import { WhatIfControls } from './WhatIfControls';
+import { WhatIfPicker } from './WhatIfPicker';
 
 /** Why: a forecast means little until there are invoices or active bills to project. */
 function hasCashData(state: StoreState): boolean {
    return state.invoices.length > 0 || state.bills.some((bill) => bill.active);
 }
 
-/** Why: the page reads the store only; the what-if is a view toggle, never a write. */
+/** Why: the page reads the store only; the what-if is a view choice, never a write. */
 export function ForecastView() {
    const { state, today } = useStore();
    const [windowSize, setWindowSize] = useState<number>(FORECAST_DEFAULT_WINDOW);
-   const [whatIfOn, setWhatIfOn] = useState(false);
+   const [selection, setSelection] = useState<WhatIfSelection>(DEFAULT_WHATIF_SELECTION);
 
    if (!state || !today) {
       return <EmptyNote text={STORE_ERROR_COPY} role="alert" />;
@@ -38,7 +44,7 @@ export function ForecastView() {
 
    let model: ForecastModel;
    try {
-      model = buildForecastModel(state, today, windowSize, whatIfOn);
+      model = buildForecastModel(state, today, windowSize, selection);
    } catch {
       return <EmptyNote text={FORECAST_COPY.errorCopy} role="alert" />;
    }
@@ -51,13 +57,23 @@ export function ForecastView() {
             value={windowSize}
             onChange={setWindowSize}
          />
-         <div className="flex flex-col gap-2">
-            <WhatIfChip
-               pressed={whatIfOn}
-               onToggle={() => setWhatIfOn((on) => !on)}
+         <div className="flex flex-col gap-4">
+            <WhatIfPicker
+               value={selection.id}
+               onChange={(id) => setSelection((current) => ({ ...current, id }))}
             />
+            {selection.id !== null && (
+               <WhatIfControls
+                  id={selection.id}
+                  selection={selection}
+                  families={state.families}
+                  onChange={(patch) =>
+                     setSelection((current) => ({ ...current, ...patch }))
+                  }
+               />
+            )}
             <p className="font-body text-sm text-ink-soft">
-               {whatIfOn ? FORECAST_COPY.whatIfOn : FORECAST_COPY.whatIfOff}
+               {selection.id === null ? FORECAST_COPY.whatIfOff : FORECAST_COPY.whatIfOn}
             </p>
          </div>
          <ForecastChart

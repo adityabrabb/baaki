@@ -578,7 +578,6 @@ export const CHASE_SHEET_COPY = {
 export const FORECAST_WINDOWS = [30, 60, 90] as const;
 export const FORECAST_DEFAULT_WINDOW = 30;
 export const FORECAST_CHART_HEIGHT_PX = 320;
-export const FORECAST_WHATIF_ID = 'top_families_late' as const;
 export const FORECAST_WHATIF_CHIP_LABEL = `Top ${WHATIF_TOP_FAMILY_COUNT} pay ${WHATIF_LATE_DAYS} days late`;
 export const FORECAST_DATE_TICK_FORMAT = 'd MMM';
 export const FORECAST_CHART_COLORS = {
@@ -588,14 +587,15 @@ export const FORECAST_CHART_COLORS = {
    grid: '#D9CBB0',
 } as const;
 export const FORECAST_BAND_OPACITY = 0.35;
+export const FORECAST_SCENARIO_DASH = '8 6';
 export const FORECAST_TICK_FONT_SIZE = 12;
 export const FORECAST_COPY = {
    title: 'Cash forecast',
    estimateNote: 'An estimate, not a promise. Check the assumptions below.',
    horizonLabel: 'Days ahead',
    whatIfLabel: 'What-if',
-   whatIfOn: 'The line shows the what-if. Your recorded data is unchanged.',
-   whatIfOff: 'Tap the chip to redraw the line with the what-if.',
+   whatIfOn: 'The dashed line is the what-if, drawn over the solid expected line. Your recorded data is unchanged.',
+   whatIfOff: 'Pick a what-if to draw a dashed line over the expected one.',
    expectedLegend: 'Expected balance',
    bandLegend: 'Optimistic to pessimistic',
    bufferLegend: 'Buffer',
@@ -607,6 +607,35 @@ export const FORECAST_COPY = {
    assumptionsTitle: 'Assumptions',
    errorCopy: "Couldn't work out the forecast from this browser's data.",
    noBillsNote: 'Add rent and other bills to see them on the chart.',
+} as const;
+
+// What-if controls and comparison copy (PRD §6, §12): one scenario at a time
+export const WHATIF_LATE_DAYS_MAX = 45;
+export const WHATIF_LOST_STUDENT_MAX = 5;
+export const WHATIF_FEE_RISE_MAX = 20;
+export const WHATIF_MIN_VALUE = 0;
+export const WHATIF_CONTROL_STEP = 1;
+export const WHATIF_PICKER_LABEL = 'Choose one what-if';
+export const WHATIF_NORMAL_LABEL = 'Normal';
+export const WHATIF_CONTROL_IDS = {
+   family: 'whatif-family',
+   lateDays: 'whatif-late-days',
+   lostStudents: 'whatif-lost-students',
+   feeRise: 'whatif-fee-rise',
+} as const;
+export const WHATIF_STEP_BUTTON_CLASS = `min-h-11 min-w-11 border-2 border-ink bg-chalk px-3 font-body text-base text-ink disabled:opacity-50 ${FOCUS_RING_CLASS}`;
+export const WHATIF_CONTROLS_COPY = {
+   familyLabel: 'Family',
+   lateLabel: (days: number) => `Pays ${days} days late`,
+   loseLabel: (count: number) => `Lose ${count} students from next month`,
+   riseLabel: (percent: number) => `Raise fees ${percent}% from next month`,
+   stepperFewer: 'Fewer',
+   stepperMore: 'More',
+} as const;
+export const WHATIF_COMPARE_COPY = {
+   lead: 'the lowest balance goes from',
+   middle: 'to',
+   same: 'the lowest balance is the same as normal.',
 } as const;
 
 // Pricing page (PRD §10): proposed plans, ROI line and the business case

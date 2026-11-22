@@ -16,3 +16,10 @@ Built in the Codebenders IDE with a custom baaki-builder agent, plus reviewer an
 - Iterations: first check had a tsc error in parseQuickAdd test (union narrowing) and the seed produced 16 overdue as of 2025-03-15 (spec 8-10); fixed in test and seed-money.ts; a seed test now asserts 8-10. Final: lint, tsc, vitest green (63 tests).
 - Decisions (PRD gaps): invoice status derived from payments; settings holds tone and language only; rent stays on day 1; pessimistic forecast excludes Risky families; reliability counts only fully paid invoices from last 6 months; fee raise applies from next month's fee due day.
 
+
+
+## [time not recorded] forecast-what-if
+- Prompt: "/forecast what-if: reuse whatIf(); scenario picker (Normal, Top 5 late, one family late with N-day slider, lose K students stepper, raise fees X% slider); dashed scenario line over expected; one comparison sentence."
+- Changes: whatIf() takes an optional options object (family, late days, leavers, fee rise %) that defaults to the PRD values, so existing calls are unchanged; forecast model draws the dashed line and the comparison sentence (status words from billStatusOf/BILL_STATUS_WORDS); new WhatIfPicker, WhatIfControls, WhatIfFamilySelect, WhatIfRangeField, WhatIfStepper, whatIfSentence; WhatIfChip removed; constants for limits and copy; Vitest cases for the new options.
+- Iterations: none recorded. Lint and tests were not run (no shell in this session); run npm run check.
+

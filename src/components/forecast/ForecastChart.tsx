@@ -14,6 +14,7 @@ import {
    FORECAST_CHART_COLORS,
    FORECAST_CHART_HEIGHT_PX,
    FORECAST_COPY,
+   FORECAST_SCENARIO_DASH,
    FORECAST_TICK_FONT_SIZE,
 } from '../../lib/constants';
 import { formatINR } from '../../lib/domain/formatINR';
@@ -72,6 +73,16 @@ export function ForecastChart({ rows, buffer, bills }: ForecastChartProps) {
                   stroke={colors.ink}
                   strokeWidth={3}
                   dot={false}
+                  isAnimationActive={false}
+               />
+               <Line
+                  type="monotone"
+                  dataKey="scenario"
+                  stroke={colors.marginRed}
+                  strokeWidth={3}
+                  strokeDasharray={FORECAST_SCENARIO_DASH}
+                  dot={false}
+                  connectNulls={false}
                   isAnimationActive={false}
                />
                <ReferenceLine

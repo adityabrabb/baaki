@@ -1,16 +1,42 @@
-// Purpose: view model for /forecast: chart rows, bill tags and the lowest-balance sentence.
+// Purpose: view model for /forecast: chart rows, bill tags, the dashed what-if line and the sentence under the chart.
 // Reuses forecast() and whatIf() unchanged; it only slices and labels their output.
 import { format } from 'date-fns';
 import {
    FORECAST_COPY,
    FORECAST_DATE_TICK_FORMAT,
-   FORECAST_WHATIF_ID,
+   WHATIF_FEE_RISE_PERCENT,
+   WHATIF_LATE_DAYS,
+   WHATIF_LOST_STUDENT_COUNT,
 } from '../../lib/constants';
 import { dayLabel, isAfterDate, parseDateOnly } from '../../lib/dates';
 import { forecast } from '../../lib/domain/forecast';
 import { formatINR } from '../../lib/domain/formatINR';
-import { whatIf } from '../../lib/domain/whatIf';
+import {
+   whatIf,
+   type WhatIfId,
+   type WhatIfOptions,
+   type WhatIfPoint,
+} from '../../lib/domain/whatIf';
 import type { StoreState } from '../../lib/types';
+import { comparisonSentence } from './whatIfSentence';
+
+/** The one what-if picked on the page (null = Normal) and its slider values. */
+export interface WhatIfSelection {
+   id: WhatIfId | null;
+   familyId: string;
+   lateDays: number;
+   lostCount: number;
+   feeRisePercent: number;
+}
+
+/** Why: the page opens on Normal, with each slider at the PRD default. */
+export const DEFAULT_WHATIF_SELECTION: WhatIfSelection = {
+   id: null,
+   familyId: '',
+   lateDays: WHATIF_LATE_DAYS,
+   lostCount: WHATIF_LOST_STUDENT_COUNT,
+   feeRisePercent: WHATIF_FEE_RISE_PERCENT,
+};
 
 /** One x-axis point: the balances on that day under each scenario. */
 export interface ChartRow {
@@ -19,6 +45,7 @@ export interface ChartRow {
    optimistic: number;
    pessimistic: number;
    band: number;
+   scenario: number | null;
 }
 
 /** A bill tag drawn on the chart at its due day. */
@@ -37,30 +64,45 @@ export interface ForecastModel {
    sentence: string;
 }
 
+/** The active what-if's label and its balances over the chosen window. */
+interface ActiveScenario {
+   label: string;
+   points: WhatIfPoint[];
+}
+
 /** Why: the chart needs short day labels that match the bill tag labels exactly. */
 function tickLabel(date: string): string {
    return format(parseDateOnly(date), FORECAST_DATE_TICK_FORMAT);
 }
 
-/** Why: the what-if line is read from whatIf(), which is display-only and never saved. */
-function lineBalances(
+/** Why: the family picker starts on the first family so the control always has a value. */
+function optionsOf(state: StoreState, selection: WhatIfSelection): WhatIfOptions {
+   return {
+      familyId: selection.familyId || (state.families[0]?.id ?? ''),
+      lateDays: selection.lateDays,
+      lostCount: selection.lostCount,
+      feeRisePercent: selection.feeRisePercent,
+   };
+}
+
+/** Why: the dashed line is read from whatIf() for the one chosen scenario; it is display-only and never saved. */
+function activeScenario(
    state: StoreState,
    today: string,
    windowSize: number,
-   whatIfOn: boolean,
-   fallback: number[],
-): number[] {
-   if (!whatIfOn) return fallback;
-   const scenario = whatIf(state, today).find(
-      (item) => item.id === FORECAST_WHATIF_ID,
+   selection: WhatIfSelection,
+): ActiveScenario | null {
+   if (selection.id === null) return null;
+   const found = whatIf(state, today, optionsOf(state, selection)).find(
+      (item) => item.id === selection.id,
    );
-   if (!scenario) return fallback;
-   return scenario.days.slice(0, windowSize).map((point) => point.balance);
+   if (!found) return null;
+   return { label: found.label, points: found.days.slice(0, windowSize) };
 }
 
 /** Why: the tutor needs one day and one action, so the lowest point is named. */
 function lowestSentence(
-   days: { date: string; balance: number }[],
+   days: WhatIfPoint[],
    buffer: number,
    today: string,
 ): string {
@@ -85,24 +127,23 @@ export function buildForecastModel(
    state: StoreState,
    today: string,
    windowSize: number,
-   whatIfOn: boolean,
+   selection: WhatIfSelection,
 ): ForecastModel {
    const result = forecast(state, today);
    const days = result.days.slice(0, windowSize);
    const buffer = state.business.buffer;
-   const line = lineBalances(
-      state,
-      today,
-      windowSize,
-      whatIfOn,
-      days.map((day) => day.expected),
-   );
+   const active = activeScenario(state, today, windowSize, selection);
+   const normal: WhatIfPoint[] = days.map((day) => ({
+      date: day.date,
+      balance: day.expected,
+   }));
    const rows: ChartRow[] = days.map((day, i) => ({
       label: tickLabel(day.date),
-      expected: line[i] ?? day.expected,
+      expected: day.expected,
       optimistic: day.optimistic,
       pessimistic: day.pessimistic,
       band: day.optimistic - day.pessimistic,
+      scenario: active?.points[i]?.balance ?? null,
    }));
    const last = days[days.length - 1]?.date;
    const bills = result.bills
@@ -112,10 +153,8 @@ export function buildForecastModel(
          name: bill.name,
          amount: bill.amount,
       }));
-   const sentence = lowestSentence(
-      days.map((day, i) => ({ date: day.date, balance: line[i] ?? day.expected })),
-      buffer,
-      today,
-   );
+   const sentence = active
+      ? comparisonSentence(active.label, normal, active.points, buffer)
+      : lowestSentence(normal, buffer, today);
    return { rows, buffer, bills, assumptions: result.assumptions, sentence };
 }

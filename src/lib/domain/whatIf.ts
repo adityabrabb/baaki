@@ -27,6 +27,14 @@ import { reliability } from './reliability';
 
 export type WhatIfId = (typeof WHATIF_SCENARIOS)[number];
 
+/** Optional slider values; omitted fields use the PRD defaults, so existing calls are unchanged. */
+export interface WhatIfOptions {
+   familyId?: string;
+   lateDays?: number;
+   lostCount?: number;
+   feeRisePercent?: number;
+}
+
 /** One day of the adjusted expected balance. */
 export interface WhatIfPoint {
    date: string;
@@ -112,11 +120,15 @@ function lateFlows(
 }
 
 /** Why: leavers' fees stop being collected from next month's due date. */
-function lostFlows(state: StoreState, today: string): {
+function lostFlows(
+   state: StoreState,
+   today: string,
+   lostCount: number,
+): {
    flows: number[];
    count: number;
 } {
-   const leavers = activeByFeeDesc(state).slice(0, WHATIF_LOST_STUDENT_COUNT);
+   const leavers = activeByFeeDesc(state).slice(0, lostCount);
    const lost = leavers.reduce((sum, student) => sum + student.feeAmount, 0);
    const flows = zeros();
    addAt(flows, nextFeeOffset(today), -lost);
@@ -124,7 +136,11 @@ function lostFlows(state: StoreState, today: string): {
 }
 
 /** Why: a fee rise is rounded per student to whole rupees, from next month. */
-function raiseFlows(state: StoreState, today: string): {
+function raiseFlows(
+   state: StoreState,
+   today: string,
+   feeRisePercent: number,
+): {
    flows: number[];
    count: number;
 } {
@@ -132,7 +148,7 @@ function raiseFlows(state: StoreState, today: string): {
    const rise = active.reduce(
       (sum, student) =>
          sum +
-         Math.round((student.feeAmount * WHATIF_FEE_RISE_PERCENT) / PERCENT_SCALE),
+         Math.round((student.feeAmount * feeRisePercent) / PERCENT_SCALE),
       0,
    );
    const flows = zeros();
@@ -174,20 +190,35 @@ function buildScenario(
  * most money open, the top five by open money, the two highest-fee leavers, and
  * a fee rise on every active student.
  */
-export function whatIf(state: StoreState, today: string): WhatIfScenario[] {
+export function whatIf(
+   state: StoreState,
+   today: string,
+   options: WhatIfOptions = {},
+): WhatIfScenario[] {
    const base = forecast(state, today).days;
    const buffer = state.business.buffer;
    const ranked = familiesByOpenBalance(state);
-   const chosen = ranked.slice(0, 1);
+   const chosen =
+      options.familyId === undefined
+         ? ranked.slice(0, 1)
+         : ranked.filter((id) => id === options.familyId);
    const top = ranked.slice(0, WHATIF_TOP_FAMILY_COUNT);
-   const lost = lostFlows(state, today);
-   const raised = raiseFlows(state, today);
+   const lost = lostFlows(
+      state,
+      today,
+      options.lostCount ?? WHATIF_LOST_STUDENT_COUNT,
+   );
+   const raised = raiseFlows(
+      state,
+      today,
+      options.feeRisePercent ?? WHATIF_FEE_RISE_PERCENT,
+   );
 
    return [
       buildScenario(
          'family_late',
          base,
-         lateFlows(state, today, chosen, WHATIF_LATE_DAYS),
+         lateFlows(state, today, chosen, options.lateDays ?? WHATIF_LATE_DAYS),
          buffer,
          chosen.length,
       ),
