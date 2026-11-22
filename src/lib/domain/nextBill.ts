@@ -1,21 +1,30 @@
-// Purpose: picks the next recurring bill due on or after today and says whether cash covers it (PRD §5 /).
+// Purpose: picks the next recurring bill due on or after today and its stamp status from the expected balance that day (PRD §6).
 // Pure: callers pass `today`; nothing here reads the clock or storage.
-import { NEXT_MONTH_OFFSET } from '../constants';
+import { BILL_STATUSES, NEXT_MONTH_OFFSET } from '../constants';
 import {
    addMonths,
    dateInMonth,
+   dayLabel,
+   diffDays,
    isBeforeDate,
    monthKeyOf,
 } from '../dates';
 import type { StoreState } from '../types';
-import { cashStatus } from './cashStatus';
+import { forecast } from './forecast';
 
-/** The bill the Today card shows, with its due date and the covered verdict. */
+export type BillStatus = (typeof BILL_STATUSES)[number];
+
+/** The bill the Today card shows, with its date, stamp status and expected balance after it. */
 export interface NextBill {
    id: string;
    name: string;
    amount: number;
    date: string;
+   dateLabel: string;
+   daysAway: number;
+   expectedAfter: number;
+   status: BillStatus;
+   /** True only when status is COVERED (expected balance stays at or above the buffer). */
    covered: boolean;
 }
 
@@ -28,8 +37,18 @@ function dueDateOnOrAfter(dayOfMonth: number, today: string): string {
 }
 
 /**
- * Why: "covered" compares cash in hand with the bill amount, so the Today stamp
- * answers the tutor's question directly. Returns null when no bill is active.
+ * Why: the stamp reads the expected balance left after the bill is paid, so
+ * "tight" means the bill is paid but cash drops under the buffer.
+ */
+export function billStatusOf(balanceAfter: number, buffer: number): BillStatus {
+   if (balanceAfter < 0) return 'not_covered';
+   if (balanceAfter < buffer) return 'tight';
+   return 'covered';
+}
+
+/**
+ * Why: the verdict uses the expected balance on the bill date (not today's cash),
+ * so it matches the forecast. Returns null when no bill is active.
  */
 export function nextBill(state: StoreState, today: string): NextBill | null {
    const due = state.bills
@@ -38,12 +57,18 @@ export function nextBill(state: StoreState, today: string): NextBill | null {
       .sort((a, b) => a.date.localeCompare(b.date) || a.bill.id.localeCompare(b.bill.id));
    const first = due[0];
    if (!first) return null;
-   const { balance } = cashStatus(state, today);
+   const daysAway = diffDays(first.date, today);
+   const expectedAfter = forecast(state, today).days[daysAway]?.expected;
+   if (expectedAfter === undefined) return null;
    return {
       id: first.bill.id,
       name: first.bill.name,
       amount: first.bill.amount,
       date: first.date,
-      covered: balance >= first.bill.amount,
+      dateLabel: dayLabel(first.date, today),
+      daysAway,
+      expectedAfter,
+      status: billStatusOf(expectedAfter, state.business.buffer),
+      covered: billStatusOf(expectedAfter, state.business.buffer) === 'covered',
    };
 }

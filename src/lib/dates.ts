@@ -14,9 +14,15 @@ import {
 import {
    DATE_FORMAT,
    DATE_ONLY_PATTERN,
+   DAY_LABEL_FORMAT,
+   DAY_WORDS,
    FIRST_DAY_OF_MONTH,
    MONTH_FORMAT,
    MONTH_KEY_PATTERN,
+   RELATIVE_FUTURE_PREFIX,
+   RELATIVE_PAST_SUFFIX,
+   RELATIVE_TODAY,
+   ROW_SEPARATOR,
    TIMEZONE,
 } from './constants';
 
@@ -101,6 +107,25 @@ export function dateInMonth(monthKey: string, day: number): string {
    const lastDay = getDate(parseDateOnly(monthEnd(first)));
    const clamped = Math.min(Math.max(day, FIRST_DAY_OF_MONTH), lastDay);
    return `${monthKey}-${String(clamped).padStart(2, '0')}`;
+}
+
+/** Why: "3 days" or "1 day" with the right plural, for relative day phrases. */
+function dayCount(n: number): string {
+   return `${n} ${n === 1 ? DAY_WORDS.one : DAY_WORDS.many}`;
+}
+
+/** Why: "in 9 days" reads faster than a raw date; today is passed in, never read here. */
+export function relativeDays(date: string, today: string): string {
+   const n = diffDays(date, today);
+   if (n === 0) return RELATIVE_TODAY;
+   if (n > 0) return `${RELATIVE_FUTURE_PREFIX} ${dayCount(n)}`;
+   return `${dayCount(-n)} ${RELATIVE_PAST_SUFFIX}`;
+}
+
+/** Why: the one date display on Today, e.g. "1 Dec · in 9 days". */
+export function dayLabel(date: string, today: string): string {
+   const day = format(parseDateOnly(date), DAY_LABEL_FORMAT);
+   return `${day}${ROW_SEPARATOR}${relativeDays(date, today)}`;
 }
 
 /** Why: ISO date strings sort correctly as text once validated. */

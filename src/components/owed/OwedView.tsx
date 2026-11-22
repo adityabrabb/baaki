@@ -1,5 +1,5 @@
 'use client';
-// Purpose: client view for /owed: total owed, ageing buckets, and overdue families ranked for chasing.
+// Purpose: client view for /owed: total owed, ageing buckets, and overdue families ranked for chasing; ?family= opens that family's Chase sheet.
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -9,10 +9,7 @@ import {
    STORE_ERROR_COPY,
 } from '../../lib/constants';
 import { ageingBuckets, totalOwed } from '../../lib/domain/ageing';
-import { chasePriority, type ChaseItem } from '../../lib/domain/chasePriority';
-import { logChaseReminders } from '../../lib/domain/reminderLog';
-import { reminderText } from '../../lib/domain/reminderText';
-import { commitState } from '../../lib/store/clientStore';
+import { chasePriority } from '../../lib/domain/chasePriority';
 import { useStore } from '../../lib/store/useStore';
 import { BigRupee } from '../khata/BigRupee';
 import { EmptyNote } from '../khata/EmptyNote';
@@ -24,7 +21,8 @@ import { FamilyRow } from './FamilyRow';
 export function OwedView() {
    const { state, today } = useStore();
    const searchParams = useSearchParams();
-   const [chasing, setChasing] = useState<ChaseItem | null>(null);
+   const highlightId = searchParams.get(OWED_FAMILY_QUERY);
+   const [chasingId, setChasingId] = useState<string | null>(highlightId);
 
    if (!state || !today) {
       return <EmptyNote text={STORE_ERROR_COPY} role="alert" />;
@@ -37,13 +35,7 @@ export function OwedView() {
 
    const buckets = ageingBuckets(state, today);
    const items = chasePriority(state, today);
-   const highlightId = searchParams.get(OWED_FAMILY_QUERY);
-
-   /** Why: copying the reminder is what counts as a chase, so it is logged here. */
-   const handleCopied = () => {
-      if (!chasing) return;
-      commitState(logChaseReminders(state, chasing.invoiceIds, today));
-   };
+   const chasing = items.find((item) => item.familyId === chasingId) ?? null;
 
    return (
       <div className="mt-6 flex flex-col gap-6">
@@ -62,7 +54,7 @@ export function OwedView() {
                         <FamilyRow
                            item={item}
                            highlighted={item.familyId === highlightId}
-                           onChase={setChasing}
+                           onChase={(picked) => setChasingId(picked.familyId)}
                         />
                      </li>
                   ))}
@@ -72,15 +64,8 @@ export function OwedView() {
          {chasing && (
             <ChaseSheet
                key={chasing.familyId}
-               familyName={chasing.familyName}
-               text={reminderText({
-                  familyName: chasing.familyName,
-                  amount: chasing.owed,
-                  daysLate: chasing.daysLate,
-                  businessName: state.business.name,
-               })}
-               onClose={() => setChasing(null)}
-               onCopied={handleCopied}
+               item={chasing}
+               onClose={() => setChasingId(null)}
             />
          )}
       </div>

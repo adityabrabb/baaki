@@ -1,29 +1,17 @@
 'use client';
-// Purpose: the Today chase queue: the top families as ChaseCards; Chase opens the copy-only reminder sheet and logs it.
+// Purpose: the Today chase queue: the top families as ChaseCards; Chase opens the reminder sheet, which logs the send.
 import { useState } from 'react';
 import type { ChaseItem } from '../../lib/domain/chasePriority';
-import { logChaseReminders } from '../../lib/domain/reminderLog';
-import { reminderText } from '../../lib/domain/reminderText';
-import { commitState } from '../../lib/store/clientStore';
-import type { StoreState } from '../../lib/types';
 import { ChaseCard } from '../khata/ChaseCard';
 import { ChaseSheet } from '../owed/ChaseSheet';
 
 export interface TodayChaseQueueProps {
-   state: StoreState;
-   today: string;
    items: ChaseItem[];
 }
 
-/** Why: the same chase rule as the Owed board, so a reminder copied here is logged there too. */
-export function TodayChaseQueue({ state, today, items }: TodayChaseQueueProps) {
+/** Why: the same chase sheet as the Owed board, so a reminder sent here is logged there too. */
+export function TodayChaseQueue({ items }: TodayChaseQueueProps) {
    const [chasing, setChasing] = useState<ChaseItem | null>(null);
-
-   /** Why: copying the reminder is what counts as a chase, so it is logged here. */
-   const handleCopied = () => {
-      if (!chasing) return;
-      commitState(logChaseReminders(state, chasing.invoiceIds, today));
-   };
 
    return (
       <>
@@ -43,18 +31,10 @@ export function TodayChaseQueue({ state, today, items }: TodayChaseQueueProps) {
          {chasing && (
             <ChaseSheet
                key={chasing.familyId}
-               familyName={chasing.familyName}
-               text={reminderText({
-                  familyName: chasing.familyName,
-                  amount: chasing.owed,
-                  daysLate: chasing.daysLate,
-                  businessName: state.business.name,
-               })}
+               item={chasing}
                onClose={() => setChasing(null)}
-               onCopied={handleCopied}
             />
          )}
       </>
    );
 }
-

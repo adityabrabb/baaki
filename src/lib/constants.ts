@@ -228,6 +228,7 @@ export const STAMP_VARIANTS = [
    'part_paid',
    'raised',
    'covered',
+   'tight',
    'not_covered',
 ] as const;
 export const STAMP_LABELS = {
@@ -236,6 +237,7 @@ export const STAMP_LABELS = {
    part_paid: 'PART-PAID',
    raised: 'RAISED',
    covered: 'COVERED',
+   tight: 'TIGHT',
    not_covered: 'NOT COVERED',
 } as const;
 export const FOCUS_RING_CLASS =
@@ -247,8 +249,7 @@ export const QUICK_ADD_LABEL = 'Quick add';
 export const QUICK_ADD_PLACEHOLDER =
    'Write it like your khata... Rohan paid 1500 upi';
 export const QUICK_ADD_SUBMIT_LABEL = 'Add';
-export const QUICK_ADD_DISABLED_REASON =
-   'Saving lines arrives in a later slice.';
+
 
 // Students slice (PRD §4 step 1, §5 /students): ids, form limits and copy
 export const STUDENT_ID_PREFIX = 'stu';
@@ -309,8 +310,6 @@ export const TODAY_COPY = {
    owedThisMonth: 'still owed for this month',
    billTitle: 'Next bill',
    billDue: 'Due',
-   billCovered: 'Cash in hand covers this bill.',
-   billNotCovered: 'Cash in hand does not cover this bill yet.',
    noBill: 'No active bills. Add rent and other outgoings to see the next one.',
    chaseTitle: 'Chase queue',
    chaseMore: 'Showing the top families. The Owed board lists everyone.',
@@ -431,11 +430,143 @@ export const OWED_COPY = {
    noOverdue: 'Nothing is overdue yet. Every open fee is still within its due date.',
    chaseSheetTitle: 'Chase reminder',
    sheetNote:
-      'This is a template. Nothing is sent for you: copy it into WhatsApp yourself.',
+      'Nothing is sent for you: WhatsApp opens with this text and you press send.',
    copyButton: 'Copy reminder',
    closeButton: 'Close',
    copied: 'Copied. Paste it into WhatsApp to send.',
    copyError: "Couldn't copy here. Select the text and copy it by hand.",
 } as const;
+
+// Today bill status (PRD §6): expected balance on the bill date decides the stamp
+export const BILL_STATUSES = ['covered', 'tight', 'not_covered'] as const;
+export const BILL_STATUS_WORDS = {
+   covered: 'covered',
+   tight: 'tight',
+   not_covered: 'not covered',
+} as const;
+export const BILL_HEADLINE_CHASE_PREFIX = 'Chase';
+export const FAMILY_WORDS = { one: 'family', many: 'families' } as const;
+export const CHASE_TARGET_LIMIT = 3;
+export const NAME_LIST_JOIN = ', ';
+
+// Alerts (PRD §6): only bills inside the window, max one per bill
+export const ALERT_WINDOW_DAYS = 30;
+export const ALERT_MAX_COUNT = 3;
+
+// Day labels on Today: "1 Dec · in 9 days"
+export const DAY_LABEL_FORMAT = 'd MMM';
+export const DAY_WORDS = { one: 'day', many: 'days' } as const;
+export const RELATIVE_TODAY = 'today';
+export const RELATIVE_FUTURE_PREFIX = 'in';
+export const RELATIVE_PAST_SUFFIX = 'ago';
+
+// AI (PRD §7): server routes only; every failure falls back to templates
+export const GEMINI_API_KEY_ENV = 'GEMINI_API_KEY';
+export const GEMINI_MODEL_ENV = 'GEMINI_MODEL';
+export const GEMINI_MODEL_DEFAULT = 'gemini-2.5-flash';
+export const AI_TIMEOUT_MS = 8000;
+export const AI_TIMEOUT_MESSAGE = 'AI request timed out.';
+export const AI_MAX_REMINDER_CHARS = 400;
+export const AI_REMINDER_ROUTE = '/api/ai/reminder';
+export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+export const AI_PARSE_ROUTE = '/api/ai/parse';
+export const AI_JSON_FENCE_PATTERN = /^```(?:json)?\s*|\s*```$/g;
+
+export const LANGUAGE_LABELS = {
+   english: 'English',
+   hinglish: 'Hinglish',
+   hindi: 'Hindi',
+} as const;
+export const AI_PROMPT_RULES = [
+   'Write one WhatsApp fee reminder for a home tutor to send a parent.',
+   'Plain text only, no markdown, no emoji, at most 400 characters.',
+   'Polite and synthetic; never give tax, legal or financial advice.',
+   'Include the amount and the UPI link exactly as given.',
+] as const;
+export const AI_PARSE_PROMPT =
+   'Read one quick-add line from a tutor and reply with JSON only: {"type":"payment"|"bill_paid"|"unknown","student":string|null,"amount":integer|null,"method":"upi"|"cash"|null,"date":"YYYY-MM-DD"|null}. Use today as the reference day for words like yesterday. Line:';
+export const REMINDER_SOURCES = ['ai', 'template'] as const;
+export const PARSE_TYPES = ['payment', 'bill_paid', 'unknown'] as const;
+export const QUICK_ADD_MAX_AMOUNT = 10 ** QUICK_ADD_MAX_DIGITS - 1;
+export const AI_ERRORS = {
+   badJson: 'Send the request as JSON.',
+   badInput: 'The request is missing a field or has a wrong value.',
+   serverError: 'The draft could not be made. Try again in a moment.',
+   parseFailed: "Couldn't read that line. Try: Rohan paid 1500 upi",
+} as const;
+
+// Reminder fallback templates (PRD §7): tone x language; tokens filled by the service
+export const REMINDER_FALLBACK_TEMPLATES = {
+   gentle: {
+      english:
+         'Hello {family}, a gentle reminder that the fee of {amount} for {child} is {days} days past due. You can pay by UPI here: {upi}. If you have already paid, please ignore this note. Thank you, {business}.',
+      hinglish:
+         'Namaste {family}, {child} ki fees {amount} abhi {days} din se baaki hai. Aap yahan UPI se pay kar sakte hain: {upi}. Agar pehle hi pay ho chuka hai to is message ko ignore karein. Dhanyavaad, {business}.',
+      hindi:
+         'नमस्ते {family}, {child} की फीस {amount} {days} दिन से बाकी है। आप यहाँ UPI से भुगतान कर सकते हैं: {upi}। अगर भुगतान हो चुका है तो इस संदेश को अनदेखा करें। धन्यवाद, {business}।',
+   },
+   firm: {
+      english:
+         'Hello {family}, the fee of {amount} for {child} is now {days} days overdue. Please pay it this week using UPI: {upi}. Reply here if there is a problem so we can plan it together. Thank you, {business}.',
+      hinglish:
+         '{family}, {child} ki fees {amount} {days} din se overdue hai. Is hafte tak UPI se pay karein: {upi}. Koi dikkat ho to yahin reply karein, hum mil kar plan kar lenge. Dhanyavaad, {business}.',
+      hindi:
+         '{family}, {child} की फीस {amount} {days} दिन से अतिदेय है। कृपया इस सप्ताह UPI से भुगतान करें: {upi}। कोई समस्या हो तो यहीं उत्तर दें, हम मिलकर हल निकाल लेंगे। धन्यवाद, {business}।',
+   },
+   final: {
+      english:
+         'Hello {family}, this is the final reminder. The fee of {amount} for {child} is {days} days overdue and must be cleared now. Pay via UPI: {upi}. If it is not paid, we will need to discuss next steps. Thank you, {business}.',
+      hinglish:
+         '{family}, yeh aakhri reminder hai. {child} ki fees {amount} {days} din se overdue hai aur abhi clear karni hai. UPI: {upi}. Payment na hone par aage ki baat karni padegi. Dhanyavaad, {business}.',
+      hindi:
+         '{family}, यह अंतिम अनुस्मारक है। {child} की फीस {amount} {days} दिन से अतिदेय है और इसे अभी जमा करना होगा। UPI: {upi}। भुगतान न होने पर आगे की बात करनी होगी। धन्यवाद, {business}।',
+   },
+} as const;
+export const REMINDER_TOKENS = ['family', 'child', 'amount', 'days', 'business', 'upi'] as const;
+
+// Payment links (PRD §5, §8): demo helpers, they do not collect money
+export const UPI_SCHEME = 'upi://pay';
+export const UPI_CURRENCY = 'INR';
+export const WHATSAPP_BASE = 'https://wa.me/';
+export const COUNTRY_CODE = '91';
+export const LOCAL_NUMBER_LENGTH = 10;
+export const NON_DIGITS_PATTERN = /\D/g;
+
+// Quick-add and Chase sheet copy (PRD §4 steps 3-4, §6)
+export const QUICK_ADD_SAVE_LABEL = 'Save';
+export const QUICK_ADD_CONFIRM_LABEL = 'Confirm';
+export const QUICK_ADD_CANCEL_LABEL = 'Cancel';
+export const QUICK_ADD_READING_COPY = 'Reading your line...';
+export const QUICK_ADD_SAVED_COPY = 'Saved. Owed and Today are updated.';
+export const QUICK_ADD_METHOD_TITLE = 'Paid by';
+export const QUICK_ADD_BILL_UNSUPPORTED =
+   'Bill payments are not tracked yet, so nothing can be saved for this line.';
+export const QUICK_ADD_ERRORS = {
+   unknownFamily: 'No student or family matches that name.',
+   nothingOwed: 'Nothing is owed by that family right now.',
+   tooMuch: 'That is more than the family still owes.',
+   saveFailed: "Couldn't save to this browser. Changes may be lost on refresh.",
+} as const;
+export const DRAFT_KEY_SEPARATOR = '|';
+export const DRAFT_ROWS = 8;
+export const WHATSAPP_WINDOW_TARGET = '_blank';
+export const WHATSAPP_WINDOW_FEATURES = 'noopener,noreferrer';
+export const CHASE_TONE_ID = 'chase-tone';
+export const CHASE_LANGUAGE_ID = 'chase-language';
+export const CHASE_DRAFT_ID = 'chase-draft';
+export const CHASE_SHEET_COPY = {
+   drafting: 'Drafting the reminder...',
+   emptyDraft: 'No draft yet. Pick a tone and language.',
+   draftError: "Couldn't draft this reminder. You can still type one.",
+   toneLabel: 'Tone',
+   languageLabel: 'Language',
+   draftLabel: 'Reminder text',
+   openWhatsApp: 'Open WhatsApp',
+   sourceAi: 'Drafted by AI.',
+   sourceTemplate: 'Drafted from a template (no AI key or AI was unavailable).',
+   logged: 'Logged on the invoice timeline.',
+   noPhone: 'No phone number for this family. WhatsApp needs one.',
+} as const;
+
 
 

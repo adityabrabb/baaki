@@ -26,13 +26,16 @@ function makeState(bills: Bill[], openingBalance = 10000): StoreState {
 describe('nextBill', () => {
    it('picks the nearest active bill and marks it covered when cash is enough', () => {
       const state = makeState([bill('rent', 20, 8000), bill('phone', 25, 800)]);
-      expect(nextBill(state, TODAY)).toEqual({
+      const result = nextBill(state, TODAY);
+      expect(result).toMatchObject({
          id: 'rent',
          name: 'Bill rent',
          amount: 8000,
          date: '2025-03-20',
          covered: true,
       });
+      expect(result?.status).toBe('covered');
+      expect(result?.daysAway).toBe(6);
    });
 
    it('marks the bill not covered when cash is below the amount', () => {

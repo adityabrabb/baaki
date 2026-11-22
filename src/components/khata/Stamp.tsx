@@ -9,6 +9,7 @@ const VARIANT_CLASSES: Record<StampVariant, string> = {
    part_paid: 'border-ink bg-marigold text-ink',
    raised: 'border-ink text-ink',
    covered: 'border-leaf text-leaf',
+   tight: 'border-ink bg-marigold text-ink',
    not_covered: 'border-margin-red text-margin-red',
 };
 

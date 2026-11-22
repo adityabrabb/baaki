@@ -1,5 +1,5 @@
 'use client';
-// Purpose: client body of the Today page: one store read feeds the cash line, next bill, chase queue, alerts and quick-add.
+// Purpose: client body of the Today page: cash line with quick-add under it, next bill headline, chase queue and alerts.
 import {
    PAGE_COPY,
    STORE_ERROR_COPY,
@@ -7,7 +7,9 @@ import {
    TODAY_COPY,
 } from '../../lib/constants';
 import { alerts } from '../../lib/domain/alerts';
+import { billHeadline } from '../../lib/domain/billHeadline';
 import { cashStatus } from '../../lib/domain/cashStatus';
+import { chaseTargets } from '../../lib/domain/chaseTargets';
 import { chasePriority } from '../../lib/domain/chasePriority';
 import { nextBill } from '../../lib/domain/nextBill';
 import { useStore } from '../../lib/store/useStore';
@@ -33,7 +35,15 @@ export function TodayView() {
    return (
       <div className="mt-6 flex flex-col gap-8">
          <CashStatus balance={cash.balance} owedThisMonth={cash.owedThisMonth} />
-         {bill ? <NextBillCard bill={bill} /> : <EmptyNote text={TODAY_COPY.noBill} />}
+         <QuickAdd />
+         {bill ? (
+            <NextBillCard
+               bill={bill}
+               headline={billHeadline(bill, chaseTargets(state, today), today)}
+            />
+         ) : (
+            <EmptyNote text={TODAY_COPY.noBill} />
+         )}
          <section className="flex flex-col gap-3">
             <h2 className="font-display text-2xl text-ink uppercase">
                {TODAY_COPY.chaseTitle}
@@ -41,15 +51,13 @@ export function TodayView() {
             {top.length === 0 ? (
                <EmptyNote text={PAGE_COPY.today.empty} />
             ) : (
-               <TodayChaseQueue state={state} today={today} items={top} />
+               <TodayChaseQueue items={top} />
             )}
             {queue.length > TODAY_CHASE_LIMIT && (
                <p className="font-body text-sm text-ink-soft">{TODAY_COPY.chaseMore}</p>
             )}
          </section>
          <TodayAlerts alerts={alerts(state, today)} />
-         <QuickAdd />
       </div>
    );
 }
-
