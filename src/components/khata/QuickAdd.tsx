@@ -11,6 +11,7 @@ import {
    QUICK_ADD_ID,
    QUICK_ADD_LABEL,
    QUICK_ADD_MAX_LENGTH,
+   QUICK_ADD_PICK_LABEL,
    QUICK_ADD_PLACEHOLDER,
    QUICK_ADD_READING_COPY,
    QUICK_ADD_SAVED_COPY,
@@ -18,7 +19,11 @@ import {
 } from '../../lib/constants';
 import { intentFromParse } from '../../lib/domain/aiParseIntent';
 import { parseQuickAdd, type QuickAddIntent } from '../../lib/domain/parseQuickAdd';
-import { applyQuickAdd, describeIntent } from '../../lib/domain/quickAddSave';
+import {
+   applyQuickAdd,
+   describeIntent,
+   type FamilyCandidate,
+} from '../../lib/domain/quickAddSave';
 import { commitState } from '../../lib/store/clientStore';
 import { useStore } from '../../lib/store/useStore';
 import type { PaymentMethod } from '../../lib/types';
@@ -39,6 +44,7 @@ export function QuickAdd() {
    const [draft, setDraft] = useState<Draft | null>(null);
    const [busy, setBusy] = useState(false);
    const [note, setNote] = useState<string | null>(null);
+   const [candidates, setCandidates] = useState<FamilyCandidate[]>([]);
 
    if (!state || !today) return null;
 
@@ -46,6 +52,7 @@ export function QuickAdd() {
       const line = text.trim();
       if (line === '') return;
       setNote(null);
+      setCandidates([]);
       setDraft(null);
       const local = parseQuickAdd(line);
       if (local !== null) {
@@ -68,19 +75,22 @@ export function QuickAdd() {
       }
    };
 
-   /** Why: nothing is saved until the tutor confirms; a failed save says so instead of silently dropping the line. */
-   const handleConfirm = () => {
+   /** Why: nothing is saved until the tutor confirms or picks a family; a failed save says so instead of silently dropping the line. */
+   const saveDraft = (familyId?: string) => {
       if (draft === null || draft.intent.kind !== 'payment' || draft.method === null) return;
-      const outcome = applyQuickAdd(state, draft.intent, draft.method, today);
+      const outcome = applyQuickAdd(state, draft.intent, draft.method, today, familyId);
       if (!outcome.ok) {
          setNote(outcome.error);
+         setCandidates(outcome.candidates ?? []);
          return;
       }
       const saved = commitState(outcome.state);
       setNote(saved ? QUICK_ADD_SAVED_COPY : QUICK_ADD_ERRORS.saveFailed);
+      setCandidates([]);
       setDraft(null);
       setText('');
    };
+   const handleConfirm = () => saveDraft();
 
    const canConfirm =
       draft !== null && draft.intent.kind === 'payment' && draft.method !== null;
@@ -128,6 +138,20 @@ export function QuickAdd() {
          </form>
          {busy && <EmptyNote text={QUICK_ADD_READING_COPY} role="status" />}
          {note && <EmptyNote text={note} role="alert" />}
+         {candidates.length > 0 && (
+            <div role="group" aria-label={QUICK_ADD_PICK_LABEL} className="mt-2 flex flex-wrap gap-2">
+               {candidates.map((candidate) => (
+                  <button
+                     key={candidate.familyId}
+                     type="button"
+                     onClick={() => saveDraft(candidate.familyId)}
+                     className={`min-h-11 border-2 border-ink bg-chalk px-3 font-hand text-lg text-ink ${FOCUS_RING_CLASS}`}
+                  >
+                     {candidate.label}
+                  </button>
+               ))}
+            </div>
+         )}
          {draft !== null && (
             <div className="mt-3">
                <QuickAddChip

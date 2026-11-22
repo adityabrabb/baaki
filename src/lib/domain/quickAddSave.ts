@@ -15,8 +15,13 @@ import { formatINR } from './formatINR';
 import type { PaymentIntent, QuickAddIntent } from './parseQuickAdd';
 import { nextId } from './roster';
 
-export type SaveOutcome = { ok: true; state: StoreState } | { ok: false; error: string };
-export type FamilyMatch = { ok: true; familyId: string } | { ok: false; error: string };
+export type FamilyCandidate = { familyId: string; label: string };
+export type SaveOutcome =
+   | { ok: true; state: StoreState }
+   | { ok: false; error: string; candidates?: FamilyCandidate[] };
+export type FamilyMatch =
+   | { ok: true; familyId: string }
+   | { ok: false; error: string; candidates?: FamilyCandidate[] };
 
 /** Why: a family is named "<surname> family", so the surname is the name without that suffix. */
 function surnameOf(familyName: string): string {
@@ -26,22 +31,53 @@ function surnameOf(familyName: string): string {
       : trimmed;
 }
 
-/** Why: a quick-add name is a student's first name or a family surname; exactly one family must match. */
-export function familyIdByName(state: StoreState, name: string): FamilyMatch {
+/** Why: a family still owing fees is the likely target of a payment, so it wins a shared name. */
+function owesFees(state: StoreState, familyId: string): boolean {
+   return state.invoices.some(
+      (invoice) =>
+         invoice.familyId === familyId && outstandingOf(invoice, state.payments) > 0,
+   );
+}
+
+/** Why: the family name is what the tutor recognises, so it labels each candidate chip. */
+function familyLabel(state: StoreState, familyId: string): string {
+   return state.families.find((family) => family.id === familyId)?.name ?? familyId;
+}
+
+/**
+ * Why: a quick-add name is a student's first name or a family surname. A shared
+ * name resolves to the one family still owing fees; otherwise the tutor picks
+ * from candidates. A chosen family (from a chip) is used if it matches the name.
+ */
+export function familyIdByName(
+   state: StoreState,
+   name: string,
+   chosenFamilyId?: string,
+): FamilyMatch {
    const wanted = name.trim().toLowerCase();
-   const familyIds = new Set<string>();
+   const matched = new Set<string>();
    for (const student of state.students) {
       if (!student.active) continue;
       const firstName = student.name.trim().split(NAME_WORD_PATTERN)[0] ?? '';
-      if (firstName.toLowerCase() === wanted) familyIds.add(student.familyId);
+      if (firstName.toLowerCase() === wanted) matched.add(student.familyId);
    }
    for (const family of state.families) {
-      if (surnameOf(family.name).toLowerCase() === wanted) familyIds.add(family.id);
+      if (surnameOf(family.name).toLowerCase() === wanted) matched.add(family.id);
    }
-   if (familyIds.size > 1) return { ok: false, error: QUICK_ADD_ERRORS.ambiguous };
-   const [familyId] = [...familyIds];
-   if (familyId === undefined) return { ok: false, error: QUICK_ADD_ERRORS.unknownFamily };
-   return { ok: true, familyId };
+   if (chosenFamilyId !== undefined && matched.has(chosenFamilyId)) {
+      return { ok: true, familyId: chosenFamilyId };
+   }
+   const familyIds = [...matched];
+   if (familyIds.length === 0) return { ok: false, error: QUICK_ADD_ERRORS.unknownFamily };
+   const owing = familyIds.filter((familyId) => owesFees(state, familyId));
+   const pool = owing.length > 0 ? owing : familyIds;
+   const [onlyId] = pool;
+   if (pool.length === 1 && onlyId !== undefined) return { ok: true, familyId: onlyId };
+   const candidates = pool.map((familyId) => ({
+      familyId,
+      label: familyLabel(state, familyId),
+   }));
+   return { ok: false, error: QUICK_ADD_ERRORS.ambiguous, candidates };
 }
 
 /**
@@ -53,8 +89,9 @@ export function applyQuickAdd(
    intent: PaymentIntent,
    method: PaymentMethod,
    today: string,
+   chosenFamilyId?: string,
 ): SaveOutcome {
-   const match = familyIdByName(state, intent.name);
+   const match = familyIdByName(state, intent.name, chosenFamilyId);
    if (!match.ok) return match;
    const familyId = match.familyId;
 

@@ -52,7 +52,9 @@ export const SEED_CHILD_NAMES = [
 ] as const;
 export const SEED_SURNAMES = [
    'Kulkarni', 'Deshpande', 'Joshi', 'Patil', 'Pawar', 'Gokhale', 'Mehta',
-   'Iyer', 'Naik', 'Bhave', 'Sathe', 'Rane', 'Sawant', 'Kale',
+   'Iyer', 'Naik', 'Bhave', 'Sathe', 'Rane', 'Sawant', 'Kale', 'Jadhav',
+   'Chavan', 'Ghorpade', 'Bapat', 'Oak', 'Phadke', 'Karve', 'Limaye', 'Modak',
+   'Wagh', 'Thorat', 'Shinde', 'Khare', 'Garde',
 ] as const;
 export const FAMILY_LABEL = 'family';
 export const FAMILY_SUFFIX = ` ${FAMILY_LABEL}`;
@@ -536,6 +538,7 @@ export const NON_DIGITS_PATTERN = /\D/g;
 
 // Quick-add and Chase sheet copy (PRD §4 steps 3-4, §6)
 export const QUICK_ADD_SAVE_LABEL = 'Save';
+export const QUICK_ADD_PICK_LABEL = 'Pick the family';
 export const QUICK_ADD_CONFIRM_LABEL = 'Confirm';
 export const QUICK_ADD_CANCEL_LABEL = 'Cancel';
 export const QUICK_ADD_READING_COPY = 'Reading your line...';

@@ -71,12 +71,33 @@ describe('applyQuickAdd', () => {
       expect(state.payments).toHaveLength(0);
    });
 
-   it('returns the ambiguity error when two families share the surname', () => {
+   it('resolves a shared surname to the only family still owing fees', () => {
       const state = makeState({
          families: [iyerFamily, { id: 'fam-iyer-2', name: 'Iyer family', phone: '' }],
          invoices: [invoice('inv-1', 'fam-iyer', '2025-03-05', 2500)],
       });
       const outcome = applyQuickAdd(state, intentFor('iyer', 2500), 'upi', TODAY);
-      expect(outcome).toEqual({ ok: false, error: QUICK_ADD_ERRORS.ambiguous });
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.state.payments[0]).toMatchObject({ familyId: 'fam-iyer' });
+   });
+
+   it('returns the ambiguity error with candidates when several families owe fees', () => {
+      const state = makeState({
+         families: [iyerFamily, { id: 'fam-iyer-2', name: 'Iyer family', phone: '' }],
+         invoices: [
+            invoice('inv-1', 'fam-iyer', '2025-03-05', 2500),
+            invoice('inv-2', 'fam-iyer-2', '2025-03-05', 2500),
+         ],
+      });
+      const outcome = applyQuickAdd(state, intentFor('iyer', 2500), 'upi', TODAY);
+      expect(outcome).toEqual({
+         ok: false,
+         error: QUICK_ADD_ERRORS.ambiguous,
+         candidates: [
+            { familyId: 'fam-iyer', label: 'Iyer family' },
+            { familyId: 'fam-iyer-2', label: 'Iyer family' },
+         ],
+      });
    });
 });
