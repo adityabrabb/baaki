@@ -497,9 +497,11 @@ export const LANGUAGE_LABELS = {
 } as const;
 export const AI_PROMPT_RULES = [
    'Write one WhatsApp fee reminder for a home tutor to send a parent.',
+   'Write in first person as the tutor Priya, a woman: use feminine verbs in Hindi or Hinglish, e.g. "bhej rahi hoon", "yaad dila rahi hoon".',
    'Plain text only, no markdown, no emoji, at most 400 characters.',
    'Polite and synthetic; never give tax, legal or financial advice.',
-   'Include the amount. Do not write any link or URL; Baaki adds the payment link.',
+   'Include the amount. Do not write any link or URL; the app adds the payment link itself.',
+   'Never write the word "Baaki" in the reminder.',
 ] as const;
 export const AI_PARSE_PROMPT =
    'Read one quick-add line from a tutor and reply with JSON only: {"type":"payment"|"bill_paid"|"unknown","student":string|null,"amount":integer|null,"method":"upi"|"cash"|null,"date":"YYYY-MM-DD"|null}. Use today as the reference day for words like yesterday. Line:';
@@ -519,9 +521,9 @@ export const REMINDER_FALLBACK_TEMPLATES = {
       english:
          'Hello {family}, a gentle reminder that the fee of {amount} for {child} is {days} days past due. You can pay by UPI here: {upi}. If you have already paid, please ignore this note. Thank you, {business}.',
       hinglish:
-         'Namaste {family}, {child} ki fees {amount} abhi {days} din se baaki hai. Aap yahan UPI se pay kar sakte hain: {upi}. Agar pehle hi pay ho chuka hai to is message ko ignore karein. Dhanyavaad, {business}.',
+         'Namaste {family}, {child} ki fees {amount} abhi {days} din se bakaya hai. Aap yahan UPI se pay kar sakte hain: {upi}. Agar pehle hi pay ho chuka hai to is message ko ignore karein. Dhanyavaad, {business}.',
       hindi:
-         'नमस्ते {family}, {child} की फीस {amount} {days} दिन से बाकी है। आप यहाँ UPI से भुगतान कर सकते हैं: {upi}। अगर भुगतान हो चुका है तो इस संदेश को अनदेखा करें। धन्यवाद, {business}।',
+         'नमस्ते {family}, {child} की फीस {amount} {days} दिन से बकाया है। आप यहाँ UPI से भुगतान कर सकते हैं: {upi}। अगर भुगतान हो चुका है तो इस संदेश को अनदेखा करें। धन्यवाद, {business}।',
    },
    firm: {
       english:
@@ -650,6 +652,13 @@ export const WHATIF_COMPARE_COPY = {
    lead: 'the lowest balance goes from',
    middle: 'to',
    same: 'the lowest balance is the same as normal.',
+} as const;
+// Why: the bill sentence names the bill that drops most on its due day, then its status change.
+export const WHATIF_BILL_COPY = {
+   on: 'on',
+   instead: 'instead of',
+   less: 'less',
+   now: 'now',
 } as const;
 
 // Pricing page (PRD §10): proposed plans, ROI line and the business case

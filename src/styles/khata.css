@@ -2,18 +2,27 @@
 
 .ruled-page {
    --margin-x: 2.5rem;
+   /* Why: the margin starts at the page edge on mobile; desktop moves it past the Spine. */
+   --margin-start: 0px;
    background-color: var(--paper);
    background-image:
       linear-gradient(
          to right,
-         transparent calc(var(--margin-x) - 2px),
-         var(--margin-red) calc(var(--margin-x) - 2px),
-         var(--margin-red) var(--margin-x),
-         transparent var(--margin-x)
+         transparent calc(var(--margin-start) + var(--margin-x) - 2px),
+         var(--margin-red) calc(var(--margin-start) + var(--margin-x) - 2px),
+         var(--margin-red) calc(var(--margin-start) + var(--margin-x)),
+         transparent calc(var(--margin-start) + var(--margin-x))
       ),
       repeating-linear-gradient(
          to bottom,
          transparent 0 31px,
          var(--paper-line) 31px 32px
       );
+}
+
+/* Why: from md up the Spine (md:w-64) follows the 2.5rem page padding, so the margin starts at the content column. */
+@media (min-width: 48rem) {
+   .ruled-page {
+      --margin-start: calc(2.5rem + 16rem);
+   }
 }

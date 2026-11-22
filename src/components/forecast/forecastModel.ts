@@ -155,7 +155,14 @@ export function buildForecastModel(
          amount: bill.amount,
       }));
    const sentence = active
-      ? comparisonSentence(active.label, normal, active.points, buffer)
+      ? comparisonSentence(
+           active.label,
+           normal,
+           active.points,
+           buffer,
+           result.bills,
+           today,
+        )
       : lowestSentence(normal, buffer, today);
    const assumptions = [...result.assumptions, scenarioLine(selection)];
    return { rows, buffer, bills, assumptions, sentence };
