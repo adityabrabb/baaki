@@ -1,6 +1,7 @@
 // Purpose: Today alerts for bills cash will not cover, nearest first; each names its action and links to the first family's Chase.
 import Link from 'next/link';
 import {
+   CHASE_LABEL,
    FOCUS_RING_CLASS,
    OWED_FAMILY_QUERY,
    OWED_HREF,
@@ -17,6 +18,11 @@ export interface TodayAlertsProps {
 function chaseHrefFor(familyId: string | null): string {
    if (familyId === null) return OWED_HREF;
    return `${OWED_HREF}?${OWED_FAMILY_QUERY}=${encodeURIComponent(familyId)}`;
+}
+
+/** Why: the button names the family it opens, so the tutor knows whose Chase sheet is next. */
+function chaseLabelFor(familyName: string | null): string {
+   return familyName === null ? TODAY_COPY.alertAction : `${CHASE_LABEL} ${familyName}`;
 }
 
 /** Why: every alert carries a working link, so no alert is a dead end. */
@@ -42,7 +48,7 @@ export function TodayAlerts({ alerts }: TodayAlertsProps) {
                         href={chaseHrefFor(alert.chaseFamilyId)}
                         className={`mt-3 inline-flex min-h-11 min-w-11 items-center justify-center border-2 border-ink bg-ink px-4 font-body font-bold text-chalk ${FOCUS_RING_CLASS}`}
                      >
-                        {TODAY_COPY.alertAction}
+                        {chaseLabelFor(alert.chaseFamilyName)}
                      </Link>
                   </li>
                ))}

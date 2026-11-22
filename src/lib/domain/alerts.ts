@@ -17,7 +17,7 @@ import { formatINR } from './formatINR';
 
 export type AlertKind = (typeof ALERT_KINDS)[number];
 
-/** One alert per bill; chaseFamilyId is the first family to chase, for the link. */
+/** One alert per bill; chaseFamilyId and chaseFamilyName are the first family to chase, for the link and button. */
 export interface Alert {
    id: string;
    kind: AlertKind;
@@ -26,6 +26,7 @@ export interface Alert {
    daysAway: number;
    text: string;
    chaseFamilyId: string | null;
+   chaseFamilyName: string | null;
 }
 
 /** Why: a bill day is the point the PRD tests; negative cash is uncovered. */
@@ -69,6 +70,7 @@ export function alerts(state: StoreState, today: string): Alert[] {
          daysAway,
          text: `${bill.name} due ${dayLabel(bill.date, today)}. ${ALERT_MESSAGES[kind]} ${actionFor(kind, targets)}`,
          chaseFamilyId: targets.items[0]?.familyId ?? null,
+         chaseFamilyName: targets.items[0]?.familyName ?? null,
       });
    }
    return out

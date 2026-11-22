@@ -55,6 +55,8 @@ export const SEED_SURNAMES = [
    'Iyer', 'Naik', 'Bhave', 'Sathe', 'Rane', 'Sawant', 'Kale',
 ] as const;
 export const FAMILY_LABEL = 'family';
+export const FAMILY_SUFFIX = ` ${FAMILY_LABEL}`;
+export const NAME_WORD_PATTERN = /\s+/;
 export const SIBLING_FAMILY_COUNT = 4;
 
 // Seeded history (PRD §8)
@@ -129,8 +131,8 @@ export const FORECAST_ASSUMPTIONS = [
 // Alerts (PRD §6): kinds, the message stem and the action each alert names
 export const ALERT_KINDS = ['uncovered_bill', 'below_buffer'] as const;
 export const ALERT_MESSAGES = {
-   uncovered_bill: 'is not covered by expected cash.',
-   below_buffer: 'leaves expected cash under the buffer.',
+   uncovered_bill: 'Is not covered by expected cash.',
+   below_buffer: 'Leaves expected cash under the buffer.',
 } as const;
 export const ALERT_ACTIONS = {
    uncovered_bill: 'Chase overdue families before then, or move the bill.',
@@ -543,6 +545,7 @@ export const QUICK_ADD_BILL_UNSUPPORTED =
    'Bill payments are not tracked yet, so nothing can be saved for this line.';
 export const QUICK_ADD_ERRORS = {
    unknownFamily: 'No student or family matches that name.',
+   ambiguous: 'More than one family matches that name.',
    nothingOwed: 'Nothing is owed by that family right now.',
    tooMuch: 'That is more than the family still owes.',
    saveFailed: "Couldn't save to this browser. Changes may be lost on refresh.",

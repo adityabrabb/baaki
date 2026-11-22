@@ -1,6 +1,8 @@
 // Purpose: saves a confirmed quick-add payment: finds the student or family, applies it to the oldest open invoices, and describes it for the chip (PRD §6).
 // Pure: returns a new state or a friendly error; the caller commits the result and passes `today` in.
 import {
+   FAMILY_SUFFIX,
+   NAME_WORD_PATTERN,
    PAYMENT_ID_PREFIX,
    PAYMENT_METHOD_LABELS,
    QUICK_ADD_ERRORS,
@@ -14,18 +16,32 @@ import type { PaymentIntent, QuickAddIntent } from './parseQuickAdd';
 import { nextId } from './roster';
 
 export type SaveOutcome = { ok: true; state: StoreState } | { ok: false; error: string };
+export type FamilyMatch = { ok: true; familyId: string } | { ok: false; error: string };
 
-/** Why: a quick-add name may be a student or a family; a case-insensitive match on either finds it. */
-export function familyIdByName(state: StoreState, name: string): string | null {
+/** Why: a family is named "<surname> family", so the surname is the name without that suffix. */
+function surnameOf(familyName: string): string {
+   const trimmed = familyName.trim();
+   return trimmed.toLowerCase().endsWith(FAMILY_SUFFIX)
+      ? trimmed.slice(0, -FAMILY_SUFFIX.length).trim()
+      : trimmed;
+}
+
+/** Why: a quick-add name is a student's first name or a family surname; exactly one family must match. */
+export function familyIdByName(state: StoreState, name: string): FamilyMatch {
    const wanted = name.trim().toLowerCase();
-   const student = state.students.find(
-      (candidate) => candidate.active && candidate.name.trim().toLowerCase() === wanted,
-   );
-   if (student) return student.familyId;
-   const family = state.families.find(
-      (candidate) => candidate.name.trim().toLowerCase() === wanted,
-   );
-   return family?.id ?? null;
+   const familyIds = new Set<string>();
+   for (const student of state.students) {
+      if (!student.active) continue;
+      const firstName = student.name.trim().split(NAME_WORD_PATTERN)[0] ?? '';
+      if (firstName.toLowerCase() === wanted) familyIds.add(student.familyId);
+   }
+   for (const family of state.families) {
+      if (surnameOf(family.name).toLowerCase() === wanted) familyIds.add(family.id);
+   }
+   if (familyIds.size > 1) return { ok: false, error: QUICK_ADD_ERRORS.ambiguous };
+   const [familyId] = [...familyIds];
+   if (familyId === undefined) return { ok: false, error: QUICK_ADD_ERRORS.unknownFamily };
+   return { ok: true, familyId };
 }
 
 /**
@@ -38,8 +54,9 @@ export function applyQuickAdd(
    method: PaymentMethod,
    today: string,
 ): SaveOutcome {
-   const familyId = familyIdByName(state, intent.name);
-   if (familyId === null) return { ok: false, error: QUICK_ADD_ERRORS.unknownFamily };
+   const match = familyIdByName(state, intent.name);
+   if (!match.ok) return match;
+   const familyId = match.familyId;
 
    const open = state.invoices
       .filter((invoice) => invoice.familyId === familyId)

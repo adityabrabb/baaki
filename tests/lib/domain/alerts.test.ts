@@ -19,7 +19,7 @@ describe('alerts', () => {
       expect(first.billId).toBe('bill-rent');
       expect(first.date).toBe('2025-04-01');
       expect(first.daysAway).toBe(17);
-      expect(first.text).toContain('is not covered by expected cash.');
+      expect(first.text).toContain('Is not covered by expected cash.');
    });
 
    it('flags a bill that leaves cash under the buffer', () => {

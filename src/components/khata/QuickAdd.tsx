@@ -127,7 +127,7 @@ export function QuickAdd() {
             </div>
          </form>
          {busy && <EmptyNote text={QUICK_ADD_READING_COPY} role="status" />}
-         {note && <EmptyNote text={note} role="status" />}
+         {note && <EmptyNote text={note} role="alert" />}
          {draft !== null && (
             <div className="mt-3">
                <QuickAddChip
