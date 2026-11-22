@@ -671,6 +671,18 @@ export const PRICING_COPY = {
 
 // Settings page (PRD §5 /settings): demo reset with an inline two-step confirm
 export const SETTINGS_COPY = {
+   businessTitle: 'Business',
+   businessNote: 'Your name and UPI id go on every reminder. Baaki does not collect money.',
+   businessNameLabel: 'Business name',
+   upiLabel: 'UPI id',
+   businessSave: 'Save business',
+   businessSaved: 'Business details saved.',
+   exportTitle: 'Export invoices',
+   exportNote: 'Downloads every invoice as a CSV file: family, student, month, amount, paid and status.',
+   exportButton: 'Export CSV',
+   exportDisabled: 'No invoices yet, so there is nothing to export.',
+   exportDone: 'CSV downloaded.',
+   exportError: "Couldn't build the CSV file. Try again.",
    resetTitle: 'Demo data',
    resetNote: 'Restores the seeded demo: families, invoices, payments and bills. Changes made in this browser are replaced.',
    resetButton: 'Reset demo data',
@@ -681,14 +693,66 @@ export const SETTINGS_COPY = {
    resetError: "Couldn't reset this browser's storage. Try again.",
 } as const;
 
-// Bills page (PRD §5 /bills): read-only recurring bills with their next due date
+// Bills page (PRD §5 /bills): recurring bills, add/edit/delete, opening balance and buffer
 export const BILLS_COPY = {
    title: 'Recurring bills',
-   note: 'Read-only. Bills leave on their due day and are always paid in full.',
+   note: 'Bills leave on their due day and are always paid in full. Changes update Forecast and Today at once.',
    dueLabel: 'Next due',
    monthlyLabel: '/month',
    errorCopy: "Couldn't load the bills from this browser's data.",
+   addButton: 'Add bill',
+   editButton: 'Edit',
+   deleteButton: 'Delete',
+   pausedLabel: 'Paused',
+   formAddTitle: 'Add a bill',
+   formEditTitle: 'Edit bill',
+   saveButton: 'Save bill',
+   cancelButton: 'Cancel',
+   nameLabel: 'Bill name',
+   amountLabel: 'Monthly amount (₹)',
+   dayLabel: 'Day of the month (1 to 28)',
+   savedNote: 'Bill saved.',
+   deletedNote: 'Bill deleted.',
+   balanceTitle: 'Opening balance and buffer',
+   openingLabel: 'Opening balance (₹)',
+   bufferLabel: 'Safety buffer (₹)',
+   balanceSave: 'Save balances',
+   balanceSaved: 'Balances saved.',
+   saveError: STUDENTS_COPY.saveError,
 } as const;
+
+// Bills input limits and rules (PRD §5 /bills)
+export const BILL_ID_PREFIX = 'bill';
+// Every month has a 28th, so a due day from 1 to 28 always exists
+export const BILL_DAY_MIN = 1;
+export const BILL_DAY_MAX = 28;
+export const BILL_ERRORS = {
+   nameRequired: 'Enter the bill name.',
+   nameTooLong: `Keep the name under ${NAME_MAX_LENGTH} characters.`,
+   wholeRupees: 'Enter the amount in whole rupees.',
+   amountPositive: 'Amount must be more than 0 rupees.',
+   dayRange: `Day must be a whole number from ${BILL_DAY_MIN} to ${BILL_DAY_MAX}.`,
+   balanceNegative: 'Cannot be negative. Use 0 or more.',
+} as const;
+
+// Business identity (PRD §5 /settings): the name and UPI id that reminders carry
+export const UPI_ID_PATTERN = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$/;
+export const BUSINESS_ERRORS = {
+   nameRequired: 'Enter the business name.',
+   nameTooLong: `Keep the business name under ${NAME_MAX_LENGTH} characters.`,
+   upiInvalid: 'Use a UPI id like name@bank, for example priya@okbank.',
+} as const;
+
+// Invoice CSV export (PRD §5 /settings): RFC 4180 layout, plain integer money
+export const CSV_HEADER = ['family', 'student', 'month', 'amount', 'paid', 'status'] as const;
+export const CSV_DELIMITER = ',';
+export const CSV_LINE_END = '\r\n';
+export const CSV_QUOTE = '"';
+export const CSV_QUOTE_ESCAPE = '""';
+export const CSV_QUOTE_PATTERN = /"/g;
+export const CSV_NEEDS_QUOTES_PATTERN = /[",\r\n]/;
+export const CSV_MIME_TYPE = 'text/csv;charset=utf-8';
+export const CSV_FILE_NAME = 'baaki-invoices.csv';
 
 
 
